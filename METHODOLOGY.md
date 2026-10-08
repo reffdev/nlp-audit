@@ -49,7 +49,12 @@ with zero `sorry`), and it does not check whether the paper's own proofs are rig
    real line numbers, the in-scope `variable`s, and the definitions its statement uses. Every field
    quotes its source; quotes are verified mechanically against the cited Lean lines and the paper text,
    and paper pages are attached from the index, not taken from the model.
-5. **Aggregation** (`audit/report.py`). The 3 samples are **grouped, never voted**: two differences of
+5. **Proof steps** (`audit/proof_steps.py`). Statement-level extraction cannot see a difference that sits
+   inside a proof. Every numbered equation in the proofs of selected results becomes its own target,
+   "(n) in proof of <result>", described by the parent statement plus the surrounding proof text, and is
+   located (same 3-of-3 bar, same retry rounds) and extracted exactly like a result. So far: the proofs of
+   Lemma 8.2, Lemma 8.6 and Lemma 10.5 (8 equations; 7 located, 1 weak).
+6. **Aggregation** (`audit/report.py`). The 3 samples are **grouped, never voted**: two differences of
    the same pair and type are treated as one when their cited Lean lines overlap. Each grouped difference
    keeps its agreement (1, 2 or 3 of 3) and every sample's wording.
 
@@ -66,6 +71,13 @@ sorted in that order, then by agreement.
   the Lean theorem `SmoothFamilyTorusInverse.inverse_finiteJets` (on the main proof path) assumes
   `JetBound … (n + 5)`. No prompt mentions this lemma, derivative counts, or the discrepancy. All 3
   samples reported it as `stronger-bound`, citing line 868 and page 95, with both quotes verified.
+- **Second known discrepancy, found unprompted, at proof level.** Eq. (10.19), inside the proof of
+  Lemma 10.5, bounds the pressure flux by C_T R⁻¹[(B_R+1)B_R^{1/2} + R^{-3/4}B_R^{3/4}]. The Lean theorem
+  `PressureFlux.exists_uniform_actual_pressure_flux_bound` (lines 587–589) has the same R^{-7/4}B^{3/4} term but
+  a different first term, (B^{1/2}+1)(A/R + 1/R²), involving the dissipation quantity A. The proof-step
+  target (10.19) was located to that theorem by all 3 samples in round 1, and all 3 extraction samples
+  reported that the first part of the bound differs (lines 587–588, quotes verified). They typed it
+  `other` rather than a bound type, because neither bound is simply stronger; see Known limitations.
 - **Decoy test** (`audit/decoy_test.py`). Each of 21 sampled results was shown only declarations from
   an unrelated part of the formalization. In 17 of 21 the model reported no candidate at all; in 2 of
   21 all 3 samples agreed on a (necessarily wrong) declaration. On real candidates the same bar was met
@@ -82,16 +94,22 @@ sorted in that order, then by agreement.
 
 - Locating: 77 of 80 paper results found (68 in round 1, 7 in round 2, 2 in round 3); 3 weak matches
   (Proposition 4.2, Corollary 7.3, Lemma 10.3); none not found. See `out/paper_items_not_matched.csv`.
-- Extraction: Section 8 only (the pilot): 34 pairs, 3 valid samples each, 1,655 raw differences grouped
-  into 442, of which 146 were reported by all 3 samples. Only 2 pairs have a `stronger-bound` reported by
-  all 3 samples, both for Lemma 8.6.
+- Extraction: Section 8 (34 pairs), Lemma 10.5 (1 pair) and 8 proof steps of Lemmas 8.2, 8.6 and 10.5
+  (23 pairs); 3 valid samples per pair; 717 grouped differences, 251 reported by all 3 samples.
+- Review shortlist (`out/review_shortlist.md`): differences reported by all 3 samples whose type concerns
+  what is estimated (bound, norm, uniformity), plus the two validation hits. It includes a lead beyond the
+  published examples: eq. (8.10), inside the proof of Lemma 8.2, loses p+3 derivatives for ℒ^{-p}, while
+  `SmoothFamilyTorusInverse.applyMultiplier_finiteJets` (line 851) needs one more; all 3 samples reported it,
+  conditional on the Lean order `l` playing the role of the paper's `p`. For p = 1 this is the Lemma 8.6 gap.
+  Not reviewed by a mathematician.
 
 ## Known limitations
 
-- **Statement level only.** Extraction compares a result's statement and its Lean counterpart. A
-  difference inside a proof step is found only if it surfaces in a statement. The known discrepancy in
-  eq. (10.19), inside the proof of Lemma 10.5, is not targeted; its Lean counterpart
-  (`R3/PressureFlux.lean`) was located, but extraction has not been run there.
+- **Proof coverage is partial.** Proof-level targets are numbered equations only, and only in the proofs of
+  Lemmas 8.2, 8.6 and 10.5 so far. Unnumbered displayed steps and other proofs are not yet targeted.
+- **Bounds of a different shape are typed `other`.** When neither bound is simply stronger (as at (10.19)),
+  the samples use `other`, which sorts last. A dedicated type for differently shaped bounds would surface
+  these; until then the validation check, not the severity order, puts (10.19) on the shortlist.
 - **Noise.** Many differences are naming (the paper's J_θ vs. Lean's `axialFlux`) or the Lean spelling
   out conditions the paper leaves implicit (smoothness, support, explicit parameters). These are reported
   by all 3 samples on nearly every pair. Severity order and agreement push them down, but they are not
@@ -117,6 +135,9 @@ python audit/xref_llm.py files                                   # file candidat
 python audit/xref_search.py --group all                          # multi-round locating
 python audit/decoy_test.py
 python audit/extract.py --section 8                              # Phase 3
+python audit/extract.py --section 10 --items "Lemma 10.5"
+python audit/proof_steps.py --items "Lemma 8.2,Lemma 8.6,Lemma 10.5"   # proof-level targets
+python audit/extract.py --steps
 python audit/report.py                                           # tables + out/report.html
 ```
 The model endpoint is set with `AUDIT_LLM_BASE_URL`, `AUDIT_LLM_MODEL`, `AUDIT_LLM_MAX_CONCURRENCY`.

@@ -21,17 +21,22 @@ expert review. See [METHODOLOGY.md](METHODOLOGY.md) for what is and is not estab
 - **Paper ↔ Lean map, whole paper:** 77 of 80 numbered results located with all 3 independent samples agreeing;
   3 weak matches; none unlocated. The formalization ships no blueprint, and the paper references in its comments
   follow an earlier draft's numbering, so this map is new.
-- **Differences, Section 8 (pilot):** 34 (paper result, Lean declaration) pairs, 442 grouped differences, 146
-  reported by all 3 samples. See `out/report.html`.
-- **Validation:** the Lemma 8.6 discrepancy identified by Bastounis et al. (m+4 derivatives in the paper, m+5 in
-  the Lean) was reported by all 3 samples without any prompt mentioning it. A decoy test bounds how often a
+- **Differences, pilot:** Section 8, Lemma 10.5, and 8 numbered steps inside the proofs of Lemmas 8.2, 8.6 and
+  10.5: 58 (paper result or step, Lean declaration) pairs, 717 grouped differences, 251 reported by all 3
+  samples. See `out/report.html` and the 21-entry `out/review_shortlist.md`.
+- **Validation:** both discrepancies identified by Bastounis et al. were reported by all 3 samples without any
+  prompt mentioning them: Lemma 8.6 (m+4 derivatives in the paper, m+5 in the Lean) at statement level, and
+  eq. (10.19) (a differently shaped pressure-flux bound) at proof level. A decoy test bounds how often a
   confident location is wrong (2 of 21).
+- **Unreviewed lead:** eq. (8.10) in the proof of Lemma 8.2 appears to show the same derivative gap in general
+  form (p+3 in the paper, p+4 in `applyMultiplier_finiteJets`). It needs expert confirmation.
 
 ## Outputs
 
 | File | Contents |
 |---|---|
 | `out/report.html` | Everything on one static page, citations linked to the PDF page and the Lean line on GitHub |
+| `out/review_shortlist.md` | The differences most worth an expert's time, selected mechanically, with quotes and links |
 | `out/audit_table.csv` | One row per (paper result, Lean declaration) pair, most severe difference first |
 | `out/differences.csv` | One row per grouped difference: type, agreement (of 3 samples), both quotes, all wordings |
 | `out/paper_items_not_matched.csv` | Paper results without a confident Lean counterpart |

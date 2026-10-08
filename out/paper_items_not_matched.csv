@@ -1,4 +1,5 @@
 ﻿item,section,rounds_tried,status,best_candidate,candidate_agreement
+(10.16) in proof of Lemma 10.5,10,3,weak match (2 of 3 samples) after 3 rounds,NavierStokesR3.PressureFlux.canonicalCutoffFlux_eq_sum,2
 Corollary 7.3,7,3,weak match (2 of 3 samples) after 3 rounds,NavierStokes.TangentODE.exists_unique_tangent_solution,2
 Lemma 10.3,10,3,weak match (2 of 3 samples) after 3 rounds,NavierStokes.CandidateFromLimits.candidate_properties,2
 Proposition 4.2,4,3,weak match (2 of 3 samples) after 3 rounds,NavierStokes.ProfileHistories.Profiles.axialLag_equation_explicit,2

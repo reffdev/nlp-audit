@@ -1,19 +1,34 @@
 ﻿lean_decl,location,used_by_other_files,on_main_proof_path,docstring
 NavierStokes.PhysicalMeanDomain.slowDomain_open,NavierStokes/PhysicalMeanDomain.lean:33-34,36,yes,
+NavierStokes.WeightedRadialPrimitive.logPosition_mem,NavierStokes/WeightedRadialPrimitive.lean:389-392,18,yes,
+NavierStokes.LocalSignedRequest.movingStrip_domain,NavierStokes/LocalSignedRequest.lean:191-198,14,yes,
 NavierStokes.PressureStream.torusAverage_congr_slice,NavierStokes/PressureStream.lean:515-523,10,yes,
 NavierStokes.VariableGaugeMean.qLength_reference_bounds,NavierStokes/VariableGaugeMean.lean:1471-1503,10,yes,A fixed containing shell is used only to normalize the integral. The weight and the actual cutoff continue to use the moving profile endpoints.
+NavierStokes.TransportPrimitive.iteratedFDeriv_supported,NavierStokes/TransportPrimitive.lean:653-657,9,yes,
+NavierStokes.CopySolveCompatibility.coordinates_refine,NavierStokes/CopySolveCompatibility.lean:27-29,8,yes,
 NavierStokes.MeanChartCompatibility.coverMap_eq_coverPower,NavierStokes/MeanChartCompatibility.lean:674-683,8,yes,
 NavierStokes.PhysicalMeanDomain.exists_fiber_localization,NavierStokes/PhysicalMeanDomain.lean:133-149,8,yes,
+NavierStokes.RadialPullback.physicalAlias_supported,NavierStokes/RadialPullback.lean:434-445,8,yes,
+NavierStokes.WeightedRadialPrimitive.cutoff_finiteJet_bound,NavierStokes/WeightedRadialPrimitive.lean:773-804,8,yes,"A smooth scalar radial cutoff has bounded actual Fréchet jets on the entire strip, including its unbounded auxiliary directions."
 NavierStokes.PhysicalMeanDomain.localize_periodic,NavierStokes/PhysicalMeanDomain.lean:125-131,7,yes,
 NavierStokes.VariableGaugeMean.temporalAtIndex_supportedGauge,NavierStokes/VariableGaugeMean.lean:2537-2546,7,yes,
 NavierStokes.MeanRankUpdate.meanClass_congr_on,NavierStokes/MeanRankUpdate.lean:1089-1101,6,yes,
 NavierStokes.PressureStream.torusAverage_supported,NavierStokes/PressureStream.lean:91-100,6,yes,
+NavierStokes.RadialPullback.normalizeSource_supported,NavierStokes/RadialPullback.lean:209-221,6,yes,
 NavierStokes.SignedWaveUpdate.coefficientBlock_velocity,NavierStokes/SignedWaveUpdate.lean:507-511,6,yes,
+NavierStokes.TransportPrimitive.totalIntegral_eq_radialInterval,NavierStokes/TransportPrimitive.lean:547-559,6,yes,
 NavierStokes.VariableGaugeMean.fderiv_apply_supportedGauge,NavierStokes/VariableGaugeMean.lean:2870-2880,6,yes,
+NavierStokes.WeightedRadialPrimitive.logStrip_majorant_eq,NavierStokes/WeightedRadialPrimitive.lean:1027-1040,6,yes,"On the concrete strip, the library majorant is exactly a band amplitude times the explicit logarithmic radial weight."
+NavierStokes.WeightedRadialPrimitive.weight_uniform_bound,NavierStokes/WeightedRadialPrimitive.lean:205-215,6,yes,A single global bound for the weighted envelope on the whole finite shell.
 NavierStokes.PhysicalMeanDomain.liftedPressureMass_fiberLocal,NavierStokes/PhysicalMeanDomain.lean:535-539,5,yes,
+NavierStokes.RadialPullback.positiveRadius_eq_self,NavierStokes/RadialPullback.lean:38-42,5,yes,
+NavierStokes.RadialPullback.radial_multiplier_finiteJets_uniform,NavierStokes/RadialPullback.lean:671-701,5,yes,"Multiplication by a fixed smooth radial coefficient has a finite-order constant, with all product-rule terms retained."
 NavierStokes.SignedWaveUpdate.normalDot_complexify,NavierStokes/SignedWaveUpdate.lean:1035-1037,5,yes,
 NavierStokes.SlowResidualMatching.angularCoefficient_congr_germ,NavierStokes/SlowResidualMatching.lean:233-239,5,yes,
 NavierStokes.SlowResidualMatching.axialCoefficient_congr_germ,NavierStokes/SlowResidualMatching.lean:241-248,5,yes,
+NavierStokes.CopySolveCompatibility.coordinates_timeGeometry,NavierStokes/CopySolveCompatibility.lean:354-361,4,yes,
+NavierStokes.CopySolveCompatibility.copySolve_scaleSource,NavierStokes/CopySolveCompatibility.lean:311-314,4,yes,
+NavierStokes.LocalSignedRequest.meanClass_liftedTorusAverage,NavierStokes/LocalSignedRequest.lean:535-549,4,yes,
 NavierStokes.MeanChartCompatibility.temporalAtIndex_periodic,NavierStokes/MeanChartCompatibility.lean:609-613,4,yes,
 NavierStokes.PhysicalMeanDomain.localize_supported,NavierStokes/PhysicalMeanDomain.lean:116-122,4,yes,
 NavierStokes.PressureStream.divideRadius_contDiff,NavierStokes/PressureStream.lean:257-270,4,yes,Division by radius is harmless for a smooth field supported away from the axis.
@@ -21,13 +36,21 @@ NavierStokes.PressureStream.rho_support,NavierStokes/PressureStream.lean:51-56,4
 NavierStokes.PressureStream.streamGamma_eq_desired_sub_alias_global,NavierStokes/PressureStream.lean:759-772,4,not found,
 NavierStokes.PressureStream.streamPotential_supported,NavierStokes/PressureStream.lean:451-457,4,not found,
 NavierStokes.PressureStream.stream_divergence_zero,NavierStokes/PressureStream.lean:320-335,4,yes,The cylindrical divergence of the actual stream realization is exactly zero.
+NavierStokes.RadialPullback.physicalAlias_eq_cutoff_derivative_global,NavierStokes/RadialPullback.lean:460-468,4,yes,
+NavierStokes.RadialPullback.physicalCompact_supported,NavierStokes/RadialPullback.lean:348-354,4,yes,
+NavierStokes.RadialPullback.radial_comp_finiteJets_uniform,NavierStokes/RadialPullback.lean:646-669,4,yes,"A fixed radial coordinate map has a finite-order composition constant, uniform on the full auxiliary strip, for actual multilinear derivative norms."
 NavierStokes.SignedMeanGain.signed_tensor_bounds,NavierStokes/SignedMeanGain.lean:462-471,4,yes,
 NavierStokes.SignedMeanGain.waveStage_covariance,NavierStokes/SignedMeanGain.lean:186-193,4,yes,
 NavierStokes.SignedMeanGain.waveStage_mean,NavierStokes/SignedMeanGain.lean:180-184,4,yes,
 NavierStokes.SignedWaveUpdate.coefficientBlock_zero_coefficient,NavierStokes/SignedWaveUpdate.lean:492-504,4,yes,
 NavierStokes.SignedWaveUpdate.conjugatePair_class,NavierStokes/SignedWaveUpdate.lean:522-534,4,yes,
 NavierStokes.TorusInverse.series_eq_torusSeries,NavierStokes/TorusInverse.lean:368-370,4,yes,
+NavierStokes.TransportPrimitive.pastIntegral_eq_radialInterval,NavierStokes/TransportPrimitive.lean:532-545,4,yes,The alternative radial-coordinate formula is derived by translation.
+NavierStokes.TransportPrimitive.radial_zero_of_lt,NavierStokes/TransportPrimitive.lean:166-169,4,yes,
+NavierStokes.TransportPrimitive.transport_compactIntegral,NavierStokes/TransportPrimitive.lean:395-405,4,yes,
 NavierStokes.VariableGaugeMean.meanPressure_periodicOn,NavierStokes/VariableGaugeMean.lean:1921-1925,4,not found,
+NavierStokes.CopySolveCompatibility.anchoredSolve_eq_of_sameInputs,NavierStokes/CopySolveCompatibility.lean:620-632,3,yes,
+NavierStokes.CopySolveCompatibility.copySolve_transform,NavierStokes/CopySolveCompatibility.lean:128-133,3,yes,
 NavierStokes.CorrectionState.angularAverage_axisymmetric,NavierStokes/CorrectionState.lean:80-84,3,yes,
 NavierStokes.CorrectionStep.assembledCovarianceIncrement_mem,NavierStokes/CorrectionStep.lean:7491-7521,3,yes,
 NavierStokes.CorrectionStep.linearGoodBlock_cancel_uniform,NavierStokes/CorrectionStep.lean:7221-7249,3,yes,Coefficient extraction preserves constants chosen before the spatial label. The identity concerns the actual linear field and retained Gaussian.
@@ -49,6 +72,14 @@ NavierStokes.SignedWaveUpdate.coefficients_inputBounds,NavierStokes/SignedWaveUp
 NavierStokes.TorusInverse.continuous_torusSeries,NavierStokes/TorusInverse.lean:382-386,3,yes,
 NavierStokes.TorusInverse.directionalInverse_periodic,NavierStokes/TorusInverse.lean:578-581,3,yes,
 NavierStokes.TorusInverse.inverse_preserves_parameter_support,NavierStokes/TorusInverse.lean:564-571,3,yes,Inversion uses only the torus variable and preserves support in every external parameter. No nonvanishing or convergence hypothesis is needed here.
+NavierStokes.TransportPrimitive.iteratedFDeriv_futureIntegral,NavierStokes/TransportPrimitive.lean:836-848,3,yes,The future primitive has the same derivative commutation as the past primitive.
+NavierStokes.TransportPrimitive.iteratedFDeriv_pastIntegral,NavierStokes/TransportPrimitive.lean:663-686,3,yes,Every order of the actual multilinear Fréchet derivative commutes with I.
+NavierStokes.TransportPrimitive.iteratedFDeriv_totalIntegral_norm_le,NavierStokes/TransportPrimitive.lean:720-727,3,not found,
+NavierStokes.TransportPrimitive.parameterIntegral_hasFDerivAt,NavierStokes/TransportPrimitive.lean:65-80,3,yes,
+NavierStokes.TransportPrimitive.parameter_hasFDerivAt,NavierStokes/TransportPrimitive.lean:58-63,3,yes,
+NavierStokes.TransportPrimitive.totalIntegral_eq_wholeAlias,NavierStokes/TransportPrimitive.lean:876-889,3,yes,The total integral agrees with the separately formalized radial alias.
+NavierStokes.UniformFourierAlias.norm_iteratedFDeriv_fromProduct,NavierStokes/UniformFourierAlias.lean:377-381,3,yes,
+NavierStokes.UniformFourierAlias.norm_iteratedFDeriv_toProduct,NavierStokes/UniformFourierAlias.lean:371-375,3,yes,
 NavierStokes.VariableGaugeMean.compactPrimitive_fiberLocal,NavierStokes/VariableGaugeMean.lean:317-320,3,yes,
 NavierStokes.VariableGaugeMean.meanClass_moving_localBandJets,NavierStokes/VariableGaugeMean.lean:1730-1756,3,yes,
 NavierStokes.VariableGaugeMean.meanPressure_q_supportedGauge,NavierStokes/VariableGaugeMean.lean:1851-1859,3,not found,
@@ -56,6 +87,7 @@ NavierStokes.VariableGaugeMean.pressureSource_supported,NavierStokes/VariableGau
 NavierStokes.VariableGaugeMean.streamPotential_supportedGauge,NavierStokes/VariableGaugeMean.lean:2911-2917,3,yes,
 NavierStokes.VariableGaugeMean.temporalIncrementState_classes,NavierStokes/VariableGaugeMean.lean:2837-2863,3,yes,
 NavierStokes.VariableGaugeMean.temporalIncrementState_supportedGauge,NavierStokes/VariableGaugeMean.lean:2975-2998,3,yes,
+NavierStokesR3.WeightedSobolev.memLp_cutoff_pow_smul,NavierStokes/R3/WeightedSobolev.lean:62-69,3,not found,All weighted velocity norms in the comparison argument are finite.
 NavierStokes.CorrectionState.graphOperators_dr,NavierStokes/CorrectionState.lean:304-318,2,yes,
 NavierStokes.CorrectionStep.CycleParameters.next_base_error,NavierStokes/CorrectionStep.lean:5124-5127,2,yes,
 NavierStokes.CorrectionStep.CycleParameters.next_mean,NavierStokes/CorrectionStep.lean:5115-5122,2,yes,
@@ -80,8 +112,14 @@ NavierStokes.CorrectionStep.temporalStage_preserve_masses,NavierStokes/Correctio
 NavierStokes.CorrectionStep.uniform_localInput_of_coefficients,NavierStokes/CorrectionStep.lean:7798-7816,2,yes,
 NavierStokes.CorrectionStep.waveStage_mean_gain,NavierStokes/CorrectionStep.lean:9663-9716,2,yes,The first actual wave supplies the current raw residuals and debt used by the signed request. No post-wave residual estimate is assumed.
 NavierStokes.DefectIncrementBounds.barMoment_mem,NavierStokes/DefectIncrementBounds.lean:281-297,2,not found,
+NavierStokes.FourierAlias.continuous_parameter_interval,NavierStokes/FourierAlias.lean:91-100,2,yes,
 NavierStokes.GaugeMomentBalances.pressureRecipe_movingField,NavierStokes/GaugeMomentBalances.lean:508-531,2,not found,
 NavierStokes.IntegratedMeanBalances.constructed_pressure_moment,NavierStokes/IntegratedMeanBalances.lean:864-885,2,not found,"Exact moment of the constructed compact pressure, including its normalized mean correction. The derivative used in the proof is a theorem of the actual physical transport integral, not an assumption h"
+NavierStokes.LocalSignedRequest.fullRequest_angle_frozen,NavierStokes/LocalSignedRequest.lean:651-655,2,yes,
+NavierStokes.LocalSignedRequest.fullRequest_class,NavierStokes/LocalSignedRequest.lean:644-649,2,yes,
+NavierStokes.LocalSignedRequest.fullRequest_torus_frozen,NavierStokes/LocalSignedRequest.lean:657-661,2,yes,
+NavierStokes.LocalSignedRequest.moving_radial_bounds,NavierStokes/LocalSignedRequest.lean:256-274,2,yes,
+NavierStokes.LocalSignedRequest.normalizedRequest_class,NavierStokes/LocalSignedRequest.lean:604-626,2,yes,
 NavierStokes.MeanChartCompatibility.commonRatio_le,NavierStokes/MeanChartCompatibility.lean:592-595,2,yes,
 NavierStokes.MeanChartCompatibility.meanClass_temporalAtIndex_of_native,NavierStokes/MeanChartCompatibility.lean:624-636,2,yes,
 NavierStokes.MeanChartCompatibility.rho_scale,NavierStokes/MeanChartCompatibility.lean:67-75,2,yes,The density transforms with the inverse radial length.
@@ -113,6 +151,13 @@ NavierStokes.PressureStream.streamGamma_bar_eq_desired,NavierStokes/PressureStre
 NavierStokes.PressureStream.torusAverage_slice_hasCompactSupport,NavierStokes/PressureStream.lean:835-839,2,not found,
 NavierStokes.PressureStream.torusAverage_weightedSource,NavierStokes/PressureStream.lean:534-536,2,yes,
 NavierStokes.PressureStream.weightedSource_periodic,NavierStokes/PressureStream.lean:548-554,2,not found,
+NavierStokes.RadialPullback.inverseChart_mem,NavierStokes/RadialPullback.lean:152-161,2,yes,
+NavierStokes.RadialPullback.inverseChart_rpow,NavierStokes/RadialPullback.lean:117-120,2,yes,
+NavierStokes.RadialPullback.logWeight_power_forward,NavierStokes/RadialPullback.lean:576-585,2,yes,Scaling the exponential coefficients by d² preserves exactly the same exponential flat weight under U=R^d; only a fixed clipped-edge factor changes.
+NavierStokes.RadialPullback.logWeight_power_reverse,NavierStokes/RadialPullback.lean:587-594,2,yes,
+NavierStokes.RadialPullback.meanClass_physicalCompact,NavierStokes/RadialPullback.lean:808-841,2,not found,The physical/chart inverse maps the concrete all-jet mean class to itself. The input and output weights are exactly the same logarithmic exponential.
+NavierStokes.RadialPullback.normalized_radial_integral,NavierStokes/RadialPullback.lean:304-322,2,yes,"After source normalization, the Jacobian cancels exactly, including the auxiliary shift in the transformed coordinate."
+NavierStokes.RadialPullback.physicalGraphDeriv_physicalCompact_global,NavierStokes/RadialPullback.lean:483-497,2,yes,"Global physical inverse identity. Below the positive annulus, the source, the output derivative, and the alias all vanish by their proved support."
 NavierStokes.SignedMeanGain.axialCovarianceChange_mem,NavierStokes/SignedMeanGain.lean:126-129,2,yes,
 NavierStokes.SignedMeanGain.radialCovarianceChange_mem,NavierStokes/SignedMeanGain.lean:132-136,2,yes,
 NavierStokes.SignedMeanGain.thetaCovarianceChange_mem,NavierStokes/SignedMeanGain.lean:120-123,2,yes,
@@ -151,6 +196,17 @@ NavierStokes.TorusInverse.norm_freqY_le,NavierStokes/TorusInverse.lean:93-98,2,y
 NavierStokes.TorusInverse.norm_mode,NavierStokes/TorusInverse.lean:76-78,2,yes,
 NavierStokes.TorusInverse.norm_multiplier_le,NavierStokes/TorusInverse.lean:260-272,2,yes,
 NavierStokes.TorusInverse.summable_terms,NavierStokes/TorusInverse.lean:108-111,2,yes,
+NavierStokes.TransportPrimitive.canonicalCompact_supported,NavierStokes/TransportPrimitive.lean:485-490,2,yes,
+NavierStokes.TransportPrimitive.compactIntegral_supported,NavierStokes/TransportPrimitive.lean:441-453,2,yes,
+NavierStokes.TransportPrimitive.cutoff_mem_Icc,NavierStokes/TransportPrimitive.lean:469-470,2,not found,
+NavierStokes.TransportPrimitive.fixedDeriv_supported,NavierStokes/TransportPrimitive.lean:297-300,2,yes,
+NavierStokes.TransportPrimitive.futureIntegral_eq_radialInterval,NavierStokes/TransportPrimitive.lean:561-572,2,yes,
+NavierStokes.TransportPrimitive.iteratedFDeriv_compactIntegral_norm_le,NavierStokes/TransportPrimitive.lean:751-766,2,yes,Full binomial Leibniz bound. Every derivative of the cutoff is retained.
+NavierStokes.TransportPrimitive.iteratedFDeriv_totalIntegral,NavierStokes/TransportPrimitive.lean:688-709,2,yes,Every order of the actual multilinear Fréchet derivative commutes with J.
+NavierStokes.TransportPrimitive.pastIntegral_eq_zero_of_le,NavierStokes/TransportPrimitive.lean:427-431,2,yes,
+NavierStokes.TransportPrimitive.radialSupport_fderiv,NavierStokes/TransportPrimitive.lean:245-253,2,yes,All actual Fréchet derivatives retain radial support.
+NavierStokes.TransportPrimitive.totalIntegral_norm_le,NavierStokes/TransportPrimitive.lean:574-582,2,yes,
+NavierStokes.UniformFourierAlias.finiteJetBound_fixedPartial,NavierStokes/UniformFourierAlias.lean:39-48,2,yes,
 NavierStokes.VariableGaugeMean.compactAlias_reference,NavierStokes/VariableGaugeMean.lean:2251-2272,2,yes,
 NavierStokes.VariableGaugeMean.iteratedFDeriv_supportedGauge_fiber,NavierStokes/VariableGaugeMean.lean:973-1003,2,yes,
 NavierStokes.VariableGaugeMean.localBandJets_meanClass_of_gaugeInteriorSupport,NavierStokes/VariableGaugeMean.lean:1945-1991,2,yes,
@@ -159,6 +215,20 @@ NavierStokes.VariableGaugeMean.meanPressure_eq_fixed,NavierStokes/VariableGaugeM
 NavierStokes.VariableGaugeMean.pressureSource_eq_fixed,NavierStokes/VariableGaugeMean.lean:595-600,2,yes,
 NavierStokes.VariableGaugeMean.streamPotential_periodicOn,NavierStokes/VariableGaugeMean.lean:1927-1935,2,yes,
 NavierStokes.VariableGaugeMean.temporalAtIndex_fiberLocal,NavierStokes/VariableGaugeMean.lean:2529-2534,2,yes,
+NavierStokes.WeightedRadialPrimitive.exists_log_plateau_width,NavierStokes/WeightedRadialPrimitive.lean:576-606,2,yes,Any fixed pair of interior physical plateau thresholds gives positive logarithmic collars. This derives the collars from the endpoints.
+NavierStokes.WeightedRadialPrimitive.middle_weight_lower_bound,NavierStokes/WeightedRadialPrimitive.lean:217-227,2,yes,
+NavierStokes.WeightedRadialPrimitive.transport_future_right_uniform,NavierStokes/WeightedRadialPrimitive.lean:736-750,2,yes,The future primitive obeys the right weighted estimate.
+NavierStokes.WeightedRadialPrimitive.transport_past_left_uniform,NavierStokes/WeightedRadialPrimitive.lean:719-734,2,yes,The uncorrected past primitive obeys the left weighted estimate uniformly in every auxiliary shift.
+NavierStokes.CopySolveCompatibility.coefficientAlong_timeData,NavierStokes/CopySolveCompatibility.lean:387-391,1,yes,
+NavierStokes.CopySolveCompatibility.commonSolve_of_compatibleInputs,NavierStokes/CopySolveCompatibility.lean:644-657,1,not found,
+NavierStokes.CopySolveCompatibility.commonSolve_scaleSource,NavierStokes/CopySolveCompatibility.lean:323-327,1,not found,
+NavierStokes.CopySolveCompatibility.commonSolve_transform,NavierStokes/CopySolveCompatibility.lean:142-151,1,not found,"Equality of the actual periodized solves, obtained term by term before forming the sum. No periodicity hypothesis on a native inhomogeneous solve is used, or needed."
+NavierStokes.CopySolveCompatibility.copySolve_timeData,NavierStokes/CopySolveCompatibility.lean:448-460,1,not found,
+NavierStokes.CopySolveCompatibility.forcingAlong_timeData,NavierStokes/CopySolveCompatibility.lean:393-398,1,yes,
+NavierStokes.CopySolveCompatibility.native_copy_sum_refine,NavierStokes/CopySolveCompatibility.lean:48-56,1,yes,"This includes cutoff indicators and copy envelopes, with no regularity assumption on the native function."
+NavierStokes.CopySolveCompatibility.pathFamily_congr,NavierStokes/CopySolveCompatibility.lean:88-101,1,yes,Equality of input paths may compare different parameter spaces. The canonical zero branch for a noncontinuous slice is respected as well.
+NavierStokes.CopySolveCompatibility.path_refine,NavierStokes/CopySolveCompatibility.lean:40-42,1,yes,
+NavierStokes.CopySolveCompatibility.path_timeGeometry,NavierStokes/CopySolveCompatibility.lean:369-372,1,yes,
 NavierStokes.CorrectionState.State.totalVelocity_addIncrement,NavierStokes/CorrectionState.lean:159-165,1,yes,
 NavierStokes.CorrectionState.graphOperators_dz,NavierStokes/CorrectionState.lean:320-329,1,yes,
 NavierStokes.CorrectionState.rank_axial_eq_desired,NavierStokes/CorrectionState.lean:478-490,1,not found,
@@ -204,6 +274,10 @@ NavierStokes.DefectIncrementBounds.defects_eq_stateDebt,NavierStokes/DefectIncre
 NavierStokes.DefectIncrementBounds.radial_update_split,NavierStokes/DefectIncrementBounds.lean:392-397,1,not found,
 NavierStokes.DefectIncrementBounds.rankIncrement_angular_slow,NavierStokes/DefectIncrementBounds.lean:745-750,1,not found,
 NavierStokes.DefectIncrementBounds.thetaAxial_update_split,NavierStokes/DefectIncrementBounds.lean:374-380,1,not found,
+NavierStokes.FourierAlias.inverse_frequency_eventually_small,NavierStokes/FourierAlias.lean:624-652,1,not found,The actual chart slow scale is subpower relative to epsilon. Consequently an arbitrary fixed slow loss can be absorbed into half of a positive epsilon gain. The reciprocal-frequency premise alone woul
+NavierStokes.FourierAlias.torusMean_intervalIntegral,NavierStokes/FourierAlias.lean:130-144,1,not found,The torus and radial averages commute as actual iterated integrals.
+NavierStokes.FourierAlias.torusMean_totalIntegral,NavierStokes/FourierAlias.lean:146-163,1,not found,The shifted total integral has exactly the radially integrated source mean.
+NavierStokes.FourierAlias.torusMean_translate,NavierStokes/FourierAlias.lean:61-74,1,not found,Averaging is invariant under any real torus translation.
 NavierStokes.GaugeMomentBalances.radialMoment_localize,NavierStokes/GaugeMomentBalances.lean:235-247,1,yes,
 NavierStokes.GaugeMomentBalances.state_angular_bump_improvedClass,NavierStokes/GaugeMomentBalances.lean:814-835,1,not found,"The literal angular residual, its measured mass, and the removed physical bump all refer to the same state and moving chart."
 NavierStokes.GaugeMomentBalances.state_axial_bump_improvedClass,NavierStokes/GaugeMomentBalances.lean:867-888,1,not found,"Fixed-point version for the actual output of a temporal or rank stage, whose constructor finishes with `reconstructState`."
@@ -224,6 +298,14 @@ NavierStokes.IntegratedMeanBalances.reconstructedMeanPressure_shell,NavierStokes
 NavierStokes.IntegratedMeanBalances.torusAverage_fderiv,NavierStokes/IntegratedMeanBalances.lean:390-398,1,yes,Both parameter-integral interchanges are proved from joint smoothness on the compact torus coordinate square.
 NavierStokes.IntegratedMeanBalances.zero_mass_parameterPartial,NavierStokes/IntegratedMeanBalances.lean:321-326,1,not found,
 NavierStokes.IntegratedMeanBalances.zero_mass_parameterPartial_twice,NavierStokes/IntegratedMeanBalances.lean:328-335,1,not found,
+NavierStokes.LocalSignedRequest.meanClass_physicalBarSigma,NavierStokes/LocalSignedRequest.lean:562-588,1,yes,"The physical signed primitive, in the actual moving weight, costs no power of epsilon. The only constants come from the fixed profile and the bounded normalized slow region."
+NavierStokes.LocalSignedRequest.meanClass_profileMap,NavierStokes/LocalSignedRequest.lean:282-291,1,yes,
+NavierStokes.LocalSignedRequest.physicalBarSigma_angular_divergence,NavierStokes/LocalSignedRequest.lean:867-879,1,yes,
+NavierStokes.LocalSignedRequest.physicalBarSigma_axial_divergence,NavierStokes/LocalSignedRequest.lean:881-893,1,yes,
+NavierStokes.LocalSignedRequest.physicalBarSigma_chart,NavierStokes/LocalSignedRequest.lean:727-746,1,yes,One physical request has all chart views. Only the target slow fiber needs regularity and periodicity.
+NavierStokes.LocalSignedRequest.physicalBump_improvedClass_of_moment,NavierStokes/LocalSignedRequest.lean:993-1021,1,not found,"A measured moment equal to epsilon times a slow derivative yields the extra epsilon in the actual removed physical bump, in the same moving weight."
+NavierStokes.LocalSignedRequest.physicalSigma_fiber_congr,NavierStokes/LocalSignedRequest.lean:796-807,1,yes,
+NavierStokes.LocalSignedRequest.qPower_unweighted,NavierStokes/LocalSignedRequest.lean:512-521,1,not found,
 NavierStokes.MeanChartCompatibility.commonTemporalFields_fast_cancellation,NavierStokes/MeanChartCompatibility.lean:1025-1050,1,not found,
 NavierStokes.MeanChartCompatibility.coverMap_radial,NavierStokes/MeanChartCompatibility.lean:685-688,1,yes,
 NavierStokes.MeanChartCompatibility.coverPull_periodic,NavierStokes/MeanChartCompatibility.lean:333-336,1,not found,
@@ -252,6 +334,21 @@ NavierStokes.MeanRankUpdate.slow_streamGamma_eq_desired,NavierStokes/MeanRankUpd
 NavierStokes.MeanRankUpdate.slow_streamGamma_eq_desired_slice,NavierStokes/MeanRankUpdate.lean:1879-1907,1,not found,A local differentiability hypothesis suffices for the true slow axial identity; the source need only be smooth along its radial slice.
 NavierStokes.MeanRankUpdate.slow_streamPotential_eq_scaledPrimitive_slice,NavierStokes/MeanRankUpdate.lean:1773-1787,1,not found,Only the radial slice is needed for this identity; no extension of the slow data outside its open physical domain is assumed.
 NavierStokes.MeanRankUpdate.slow_stream_divergence_zero,NavierStokes/MeanRankUpdate.lean:419-430,1,not found,The radial companion is the actual axial derivative of the same stream.
+NavierStokes.ParametricTorusInverse.coefficient_hasDerivAt,NavierStokes/ParametricTorusInverse.lean:185-206,1,yes,
+NavierStokes.ParametricTorusInverse.inverseMultiplier_growth,NavierStokes/ParametricTorusInverse.lean:277-278,1,yes,
+NavierStokes.ParametricTorusInverse.inverse_periodic,NavierStokes/ParametricTorusInverse.lean:504-506,1,not found,
+NavierStokes.ParametricTorusInverse.inverse_solves,NavierStokes/ParametricTorusInverse.lean:526-538,1,not found,"Exact inversion for the given function, with the derivative taken in the joint parameter--torus space."
+NavierStokes.ParametricTorusInverse.inverse_zeroMean,NavierStokes/ParametricTorusInverse.lean:508-521,1,not found,The inverse has zero mean even if the input has a nonzero constant mode.
+NavierStokes.ParametricTorusInverse.iterateInverse_periodic,NavierStokes/ParametricTorusInverse.lean:579-585,1,not found,
+NavierStokes.ParametricTorusInverse.iterateInverse_succ,NavierStokes/ParametricTorusInverse.lean:575-577,1,not found,
+NavierStokes.ParametricTorusInverse.mean_eq_integral,NavierStokes/ParametricTorusInverse.lean:54-56,1,not found,
+NavierStokes.ParametricTorusInverse.multiplied_coeff_bound,NavierStokes/ParametricTorusInverse.lean:296-309,1,yes,
+NavierStokes.ParametricTorusInverse.parameterJet_inverse,NavierStokes/ParametricTorusInverse.lean:562-570,1,not found,All actual derivatives in the external parameter commute with inversion.
+NavierStokes.ParametricTorusInverse.parameterJet_succ,NavierStokes/ParametricTorusInverse.lean:550-552,1,not found,
+NavierStokes.ParametricTorusInverse.parameterPartial_applyMultiplier,NavierStokes/ParametricTorusInverse.lean:493-498,1,not found,
+NavierStokes.ParametricTorusInverse.parameterPartial_periodic,NavierStokes/ParametricTorusInverse.lean:84-85,1,not found,
+NavierStokes.ParametricTorusInverse.parameterPartial_zeroMean,NavierStokes/ParametricTorusInverse.lean:208-214,1,not found,
+NavierStokes.ParametricTorusInverse.parameter_slice_hasDerivAt,NavierStokes/ParametricTorusInverse.lean:116-120,1,yes,
 NavierStokes.PhysicalMeanDomain.LocalBandJets.liftedPressureMass,NavierStokes/PhysicalMeanDomain.lean:922-938,1,yes,
 NavierStokes.PhysicalMeanDomain.centered_periodicOn,NavierStokes/PhysicalMeanDomain.lean:800-803,1,yes,
 NavierStokes.PhysicalMeanDomain.desiredIncrement_supportedOn,NavierStokes/PhysicalMeanDomain.lean:1284-1289,1,not found,
@@ -273,7 +370,6 @@ NavierStokes.PhysicalMeanDomain.normalizeSource_finiteJets_fiber,NavierStokes/Ph
 NavierStokes.PhysicalMeanDomain.pastIntegral_freeze,NavierStokes/PhysicalMeanDomain.lean:169-173,1,yes,
 NavierStokes.PhysicalMeanDomain.totalIntegral_freeze,NavierStokes/PhysicalMeanDomain.lean:175-179,1,yes,
 NavierStokes.PhysicalMeanDomain.totalIntegral_jet_bound_fiber,NavierStokes/PhysicalMeanDomain.lean:1351-1363,1,yes,
-NavierStokes.PhysicalMeanDomain.transport_compact_finiteJets_fiber,NavierStokes/PhysicalMeanDomain.lean:247-359,1,yes,
 NavierStokes.PositiveOrderMoments.fluxHistory_exterior_on,NavierStokes/PositiveOrderMoments.lean:742-762,1,yes,
 NavierStokes.PositiveOrderMoments.fluxHistory_hasDerivAt_on,NavierStokes/PositiveOrderMoments.lean:715-740,1,yes,"The actual radial divergence equation holds on an open parameter domain, without any smooth extension past that domain."
 NavierStokes.PositiveOrderMoments.pressureHistory_contDiffOn,NavierStokes/PositiveOrderMoments.lean:654-660,1,yes,The pressure reconstruction needs smoothness only on the working parameter domain.
@@ -287,6 +383,16 @@ NavierStokes.PressureStream.pressureSource_periodic,NavierStokes/PressureStream.
 NavierStokes.PressureStream.streamBeta_supported,NavierStokes/PressureStream.lean:718-724,1,not found,
 NavierStokes.PressureStream.streamGamma_supported,NavierStokes/PressureStream.lean:726-737,1,not found,
 NavierStokes.PressureStream.torusAverage_sub_slow,NavierStokes/PressureStream.lean:102-119,1,yes,
+NavierStokes.RadialPullback.deriv_interiorCutoff_zero_left,NavierStokes/RadialPullback.lean:420-425,1,yes,
+NavierStokes.RadialPullback.deriv_physicalCutoff,NavierStokes/RadialPullback.lean:386-392,1,yes,
+NavierStokes.RadialPullback.deriv_physicalCutoff_zero_left,NavierStokes/RadialPullback.lean:453-458,1,yes,
+NavierStokes.RadialPullback.normalizeSource_eq_formula,NavierStokes/RadialPullback.lean:224-237,1,yes,
+NavierStokes.RadialPullback.normalizeSource_finiteJets_uniform,NavierStokes/RadialPullback.lean:712-749,1,not found,
+NavierStokes.RadialPullback.physicalCutoff_zero_left,NavierStokes/RadialPullback.lean:447-451,1,yes,
+NavierStokes.RadialPullback.physicalGraphDeriv_physicalCompact,NavierStokes/RadialPullback.lean:401-418,1,yes,"Exact inverse identity in the physical radial graph coordinate, including the compactification alias and the source normalization."
+NavierStokes.RadialPullback.positiveRadius_lt,NavierStokes/RadialPullback.lean:64-66,1,yes,
+NavierStokes.RadialPullback.powerChart_lt_left,NavierStokes/RadialPullback.lean:122-125,1,yes,
+NavierStokes.RadialPullback.powerChart_mem,NavierStokes/RadialPullback.lean:147-150,1,yes,
 NavierStokes.SignedMeanGain.Geometry.strip_fiber,NavierStokes/SignedMeanGain.lean:584-591,1,yes,
 NavierStokes.SignedMeanGain.incrementTensor_split,NavierStokes/SignedMeanGain.lean:419-424,1,yes,
 NavierStokes.SignedMeanGain.meanBar_add_on,NavierStokes/SignedMeanGain.lean:293-298,1,yes,
@@ -358,7 +464,6 @@ NavierStokes.TemporalMeanUpdate.normalizeSource_periodic,NavierStokes/TemporalMe
 NavierStokes.TemporalMeanUpdate.normalizeSource_torusAverage,NavierStokes/TemporalMeanUpdate.lean:1140-1146,1,yes,
 NavierStokes.TemporalMeanUpdate.pullbackCover_periodic,NavierStokes/TemporalMeanUpdate.lean:626-631,1,not found,
 NavierStokes.TemporalMeanUpdate.radialUpdate_smul_direction,NavierStokes/TemporalMeanUpdate.lean:688-694,1,not found,
-NavierStokes.TemporalMeanUpdate.temporalInverse_coverMap,NavierStokes/TemporalMeanUpdate.lean:524-541,1,yes,Fiberwise native-to-absolute covariance for the actual real family inverse.
 NavierStokes.TemporalMeanUpdate.temporalInverse_periodic,NavierStokes/TemporalMeanUpdate.lean:446-450,1,yes,
 NavierStokes.TemporalMeanUpdate.temporalInverse_solves,NavierStokes/TemporalMeanUpdate.lean:492-515,1,yes,The real joint inverse solves the genuine Fréchet directional equation.
 NavierStokes.TemporalMeanUpdate.temporalInverse_supported,NavierStokes/TemporalMeanUpdate.lean:453-467,1,yes,
@@ -369,6 +474,33 @@ NavierStokes.TorusInverse.mode_eq_torusMode,NavierStokes/TorusInverse.lean:359-3
 NavierStokes.TorusInverse.norm_series_le,NavierStokes/TorusInverse.lean:434-437,1,yes,
 NavierStokes.TorusInverse.norm_torusMode,NavierStokes/TorusInverse.lean:354-355,1,yes,
 NavierStokes.TorusInverse.symbol_formula,NavierStokes/TorusInverse.lean:210-213,1,yes,
+NavierStokes.TransportPrimitive.compactIntegral_eq_neg_future,NavierStokes/TransportPrimitive.lean:502-507,1,yes,
+NavierStokes.TransportPrimitive.futureIntegral_eq_total_sub_past,NavierStokes/TransportPrimitive.lean:807-811,1,yes,
+NavierStokes.TransportPrimitive.pastIntegral_eq_total_of_ge,NavierStokes/TransportPrimitive.lean:433-439,1,yes,
+NavierStokes.TransportPrimitive.pastIntegral_norm_le,NavierStokes/TransportPrimitive.lean:584-600,1,yes,Only the radial support length enters; there is no power of M in this bound.
+NavierStokes.TransportPrimitive.radial_zero_of_le,NavierStokes/TransportPrimitive.lean:416-425,1,yes,
+NavierStokes.TransportPrimitive.transport_pastIntegral,NavierStokes/TransportPrimitive.lean:333-344,1,yes,"The exact transport identity, proved by the fundamental theorem of calculus."
+NavierStokes.TransportPrimitive.uniform_local_bound,NavierStokes/TransportPrimitive.lean:32-48,1,yes,Continuity gives a uniform bound near a parameter value on a compact interval. The parameter space need not be finite dimensional.
+NavierStokes.UniformFourierAlias.admissible_complexify,NavierStokes/UniformFourierAlias.lean:1168-1175,1,yes,
+NavierStokes.UniformFourierAlias.admissible_step,NavierStokes/UniformFourierAlias.lean:793-802,1,yes,
+NavierStokes.UniformFourierAlias.exactAlias_supported,NavierStokes/UniformFourierAlias.lean:130-146,1,not found,
+NavierStokes.UniformFourierAlias.familyInverse_solves,NavierStokes/UniformFourierAlias.lean:775-787,1,yes,
+NavierStokes.UniformFourierAlias.familyInverse_supported,NavierStokes/UniformFourierAlias.lean:750-762,1,yes,
+NavierStokes.UniformFourierAlias.meanClass_global_finiteJets,NavierStokes/UniformFourierAlias.lean:891-929,1,not found,"The flat radial weight absorbs every fixed inverse-edge power, giving a global finite seminorm bound for a genuine mean-class family."
+NavierStokes.UniformFourierAlias.meanClass_normalizeSource,NavierStokes/UniformFourierAlias.lean:931-968,1,not found,The actual power-chart normalization transports the source family class; all constants are uniform in the band and every auxiliary variable.
+NavierStokes.UniformFourierAlias.meanClass_realCenterSource,NavierStokes/UniformFourierAlias.lean:1040-1050,1,not found,
+NavierStokes.UniformFourierAlias.meanClass_realInverse,NavierStokes/UniformFourierAlias.lean:1028-1038,1,not found,
+NavierStokes.UniformFourierAlias.norm_iteratedFDeriv_complexify,NavierStokes/UniformFourierAlias.lean:298-301,1,yes,
+NavierStokes.UniformFourierAlias.norm_iteratedFDeriv_totalIntegral_complexify,NavierStokes/UniformFourierAlias.lean:318-324,1,yes,
+NavierStokes.UniformFourierAlias.one_le_bandSlow,NavierStokes/UniformFourierAlias.lean:1059-1059,1,not found,
+NavierStokes.UniformFourierAlias.radial_realMeanClass_alias_superflat,NavierStokes/UniformFourierAlias.lean:1256-1276,1,not found,
+NavierStokes.UniformFourierAlias.realCenterSource_periodic,NavierStokes/UniformFourierAlias.lean:667-670,1,yes,
+NavierStokes.UniformFourierAlias.realCenterSource_supported,NavierStokes/UniformFourierAlias.lean:678-689,1,yes,
+NavierStokes.UniformFourierAlias.realCenterSource_zeroMean,NavierStokes/UniformFourierAlias.lean:673-675,1,yes,
+NavierStokes.UniformFourierAlias.realCentered_finiteJets,NavierStokes/UniformFourierAlias.lean:626-639,1,yes,
+NavierStokes.UniformFourierAlias.real_exactAlias_finiteJets,NavierStokes/UniformFourierAlias.lean:1193-1208,1,not found,
+NavierStokes.UniformFourierAlias.sourceJet_mem,NavierStokes/UniformFourierAlias.lean:57-64,1,yes,
+NavierStokes.UniformFourierAlias.totalIntegral_realCenterSource,NavierStokes/UniformFourierAlias.lean:691-718,1,yes,
 NavierStokes.VariableGaugeMean.compactAlias_interior_support,NavierStokes/VariableGaugeMean.lean:2340-2349,1,yes,
 NavierStokes.VariableGaugeMean.compactAlias_q_supportedGauge,NavierStokes/VariableGaugeMean.lean:2623-2627,1,yes,
 NavierStokes.VariableGaugeMean.compactPrimitive_supportedGauge,NavierStokes/VariableGaugeMean.lean:794-812,1,yes,
@@ -397,6 +529,54 @@ NavierStokes.VariableGaugeMean.reconstructState_radial_identity,NavierStokes/Var
 NavierStokes.VariableGaugeMean.streamPotential_coverPull,NavierStokes/VariableGaugeMean.lean:673-718,1,yes,
 NavierStokes.VariableGaugeMean.streamPotential_eq_fixed,NavierStokes/VariableGaugeMean.lean:611-615,1,yes,
 NavierStokes.VariableGaugeMean.temporalAxialDifference_eq_dividedAlias,NavierStokes/VariableGaugeMean.lean:2944-2957,1,yes,
+NavierStokes.WeightedRadialPrimitive.canonical_transport_finiteJets_uniform,NavierStokes/WeightedRadialPrimitive.lean:977-993,1,not found,
+NavierStokes.WeightedRadialPrimitive.compact_jet_eq_neg_future_on_right,NavierStokes/WeightedRadialPrimitive.lean:834-857,1,yes,"On an open right logarithmic collar the compactified operator equals the negative future integral, including all its actual derivatives."
+NavierStokes.WeightedRadialPrimitive.compact_jet_eq_past_on_left,NavierStokes/WeightedRadialPrimitive.lean:812-832,1,yes,"On an open left logarithmic collar, every actual derivative of the compactified operator equals the corresponding derivative of the past integral."
+NavierStokes.WeightedRadialPrimitive.delta_le_left,NavierStokes/WeightedRadialPrimitive.lean:41-42,1,yes,
+NavierStokes.WeightedRadialPrimitive.delta_le_right,NavierStokes/WeightedRadialPrimitive.lean:43-44,1,yes,
+NavierStokes.WeightedRadialPrimitive.delta_left_half,NavierStokes/WeightedRadialPrimitive.lean:122-124,1,yes,
+NavierStokes.WeightedRadialPrimitive.expCoordinate_logPosition,NavierStokes/WeightedRadialPrimitive.lean:417-421,1,yes,
+NavierStokes.WeightedRadialPrimitive.transport_compact_finiteJets_uniform,NavierStokes/WeightedRadialPrimitive.lean:861-975,1,yes,Every finite prefix of actual Fréchet derivatives of the compactified transport inverse preserves the same flat radial envelope. The estimate is uniform in the shift and in all auxiliary variables.
+NavierStokes.WeightedRadialPrimitive.transport_mass_uniform,NavierStokes/WeightedRadialPrimitive.lean:752-771,1,yes,"A common bound for past and total mass, uniform in every shift and in the point in the annulus. It is used only on a compact interior collar."
+NavierStokes.WeightedRadialPrimitive.weight_le_wholeMajorant,NavierStokes/WeightedRadialPrimitive.lean:186-197,1,yes,
+NavierStokesR3.PressureFluxIdentity.fluxFunction_hasCompactSupport,NavierStokes/R3/PressureFluxIdentity.lean:31-39,1,not found,
+NavierStokesR3.PressureFluxIdentity.integrable_pressure_flux,NavierStokes/R3/PressureFluxIdentity.lean:41-46,1,not found,
+NavierStokesR3.WeightedSobolev.lpNorm_cutoffGradientAmplitude,NavierStokes/R3/WeightedSobolev.lean:144-150,1,not found,
+NavierStokesR3.WeightedSobolev.memLp_cutoffGradientAmplitude,NavierStokes/R3/WeightedSobolev.lean:123-127,1,not found,
+NavierStokesR3.WholeSpaceUniqueness.candidate_global_agrees_before_one,NavierStokes/R3/WholeSpaceUniqueness.lean:102-117,1,not found,A global smooth solution with uniformly finite kinetic energy must agree with the candidate at every time strictly before one.
+NavierStokesR3.WholeSpaceUniqueness.classical_uniqueness_on_Icc,NavierStokes/R3/WholeSpaceUniqueness.lean:28-68,1,not found,Whole-space comparison on a positive closed time interval. Finite energy of the reference velocity is a consequence of its compact spatial support.
+NavierStokes.CopySolveCompatibility.anchoredSolve_recenter,NavierStokes/CopySolveCompatibility.lean:209-223,0,not found,
+NavierStokes.CopySolveCompatibility.anchoredSolve_scaleSource,NavierStokes/CopySolveCompatibility.lean:295-309,0,yes,
+NavierStokes.CopySolveCompatibility.anchoredSolve_timeData,NavierStokes/CopySolveCompatibility.lean:420-446,0,not found,Clock transport is proved from uniqueness of the actual zero-entry Volterra solution on the transported interval.
+NavierStokes.CopySolveCompatibility.anchoredSolve_transform,NavierStokes/CopySolveCompatibility.lean:121-126,0,yes,
+NavierStokes.CopySolveCompatibility.changing_anchor_changes_solution,NavierStokes/CopySolveCompatibility.lean:712-719,0,not found,Even smooth constant source/coefficient data do not make differently anchored solves equal. This is an actual constructed-solution counterexample.
+NavierStokes.CopySolveCompatibility.coefficientAlong_transform,NavierStokes/CopySolveCompatibility.lean:75-79,0,yes,
+NavierStokes.CopySolveCompatibility.coefficientPath_transform,NavierStokes/CopySolveCompatibility.lean:103-109,0,yes,
+NavierStokes.CopySolveCompatibility.commonOnTorus_refine,NavierStokes/CopySolveCompatibility.lean:168-175,0,not found,
+NavierStokes.CopySolveCompatibility.commonSolve_bandCommonChart,NavierStokes/CopySolveCompatibility.lean:589-598,0,not found,The slow/torus argument is exactly the existing common-band chart map.
+NavierStokes.CopySolveCompatibility.commonSolve_eq_of_sameInputs,NavierStokes/CopySolveCompatibility.lean:634-640,0,not found,
+NavierStokes.CopySolveCompatibility.commonSolve_family_represents,NavierStokes/CopySolveCompatibility.lean:547-580,0,not found,The family of chart solves represents one explicitly constructed physical field. Assumptions concern only input transport and the coordinate maps; no output equality or chartwise existence witness is 
+NavierStokes.CopySolveCompatibility.commonSolve_recenter,NavierStokes/CopySolveCompatibility.lean:237-241,0,not found,
+NavierStokes.CopySolveCompatibility.commonSolve_timeData,NavierStokes/CopySolveCompatibility.lean:482-494,0,not found,
+NavierStokes.CopySolveCompatibility.commonSolve_transport,NavierStokes/CopySolveCompatibility.lean:514-525,0,not found,
+NavierStokes.CopySolveCompatibility.compatible_family_represents,NavierStokes/CopySolveCompatibility.lean:659-690,0,not found,"Existing, separately defined chart inputs produce the same single physical output as the canonical transported data when their primitive coefficient and forcing identities are verified."
+NavierStokes.CopySolveCompatibility.constantForcing_anchoredSolve,NavierStokes/CopySolveCompatibility.lean:701-710,0,not found,
+NavierStokes.CopySolveCompatibility.coordinates_recenter,NavierStokes/CopySolveCompatibility.lean:184-189,0,not found,
+NavierStokes.CopySolveCompatibility.coordinates_timeGeometry_fst,NavierStokes/CopySolveCompatibility.lean:363-367,0,yes,
+NavierStokes.CopySolveCompatibility.copySolve_recenter,NavierStokes/CopySolveCompatibility.lean:225-229,0,not found,
+NavierStokes.CopySolveCompatibility.cutoff_refine,NavierStokes/CopySolveCompatibility.lean:44-46,0,not found,
+NavierStokes.CopySolveCompatibility.forcingAlong_transform,NavierStokes/CopySolveCompatibility.lean:81-85,0,yes,
+NavierStokes.CopySolveCompatibility.forcingPath_transform,NavierStokes/CopySolveCompatibility.lean:111-117,0,yes,
+NavierStokes.CopySolveCompatibility.localizedCopy_recenter,NavierStokes/CopySolveCompatibility.lean:231-235,0,not found,
+NavierStokes.CopySolveCompatibility.localizedCopy_scaleSource,NavierStokes/CopySolveCompatibility.lean:316-321,0,not found,
+NavierStokes.CopySolveCompatibility.localizedCopy_timeData,NavierStokes/CopySolveCompatibility.lean:462-480,0,not found,
+NavierStokes.CopySolveCompatibility.localizedCopy_transform,NavierStokes/CopySolveCompatibility.lean:135-140,0,not found,
+NavierStokes.CopySolveCompatibility.path_recenter,NavierStokes/CopySolveCompatibility.lean:198-200,0,not found,
+NavierStokes.CopySolveCompatibility.physicalOutput_contDiffOn,NavierStokes/CopySolveCompatibility.lean:531-545,0,not found,The single reference output is an actual smooth field under the usual compact native cutoff and smooth input hypotheses. Local finiteness of the periodization is supplied by the constructed copy solve
+NavierStokes.CopySolveCompatibility.point_recenter,NavierStokes/CopySolveCompatibility.lean:191-196,0,not found,
+NavierStokes.CopySolveCompatibility.point_refine,NavierStokes/CopySolveCompatibility.lean:31-38,0,yes,
+NavierStokes.CopySolveCompatibility.point_timeGeometry,NavierStokes/CopySolveCompatibility.lean:344-352,0,yes,
+NavierStokes.CopySolveCompatibility.source_periodic_transform,NavierStokes/CopySolveCompatibility.lean:160-166,0,not found,
 NavierStokes.CorrectionState.State.meanResidual_eq_good_add_excluded,NavierStokes/CorrectionState.lean:140-142,0,not found,
 NavierStokes.CorrectionState.graphOperators_fastTime,NavierStokes/CorrectionState.lean:331-336,0,not found,
 NavierStokes.CorrectionStep.AngularContinuous.add,NavierStokes/CorrectionStep.lean:436-438,0,not found,
@@ -760,6 +940,36 @@ NavierStokes.DefectIncrementBounds.thetaAxial_shell,NavierStokes/DefectIncrement
 NavierStokes.DefectIncrementBounds.thetaDefect_update,NavierStokes/DefectIncrementBounds.lean:462-469,0,not found,
 NavierStokes.DefectIncrementBounds.thetaLeading_shell,NavierStokes/DefectIncrementBounds.lean:356-359,0,not found,
 NavierStokes.DefectIncrementBounds.thetaQuadratic_shell,NavierStokes/DefectIncrementBounds.lean:348-350,0,not found,
+NavierStokes.FourierAlias.cutoffAlias_eq_nonbarPart,NavierStokes/FourierAlias.lean:483-491,0,not found,"If the integrated bar vanishes, subtracting the bar does not change the alias at all. This is the exact reduction used for the pressure source."
+NavierStokes.FourierAlias.cutoffAlias_finiteJet_bound,NavierStokes/FourierAlias.lean:305-356,0,not found,"Before using oscillation, every finite prefix of alias jets has a bound uniform in both the frequency and the translation direction."
+NavierStokes.FourierAlias.cutoffAlias_fourierSourceJet,NavierStokes/FourierAlias.lean:540-556,0,not found,Exact arbitrary-order IBP with the Fourier inverse constructed from the given source's own coefficients. No antiderivative or decay premise remains.
+NavierStokes.FourierAlias.cutoffAlias_periodic,NavierStokes/FourierAlias.lean:176-180,0,not found,
+NavierStokes.FourierAlias.cutoffAlias_sourceJet,NavierStokes/FourierAlias.lean:389-398,0,not found,
+NavierStokes.FourierAlias.cutoffAlias_superflat,NavierStokes/FourierAlias.lean:676-696,0,not found,"Uniform full-jet superflatness of the retained exact alias. Constants and the eventual threshold may depend on the requested jet order and epsilon power, but not on the frequency index, evaluation poi"
+NavierStokes.FourierAlias.cutoffAlias_supported,NavierStokes/FourierAlias.lean:284-303,0,not found,
+NavierStokes.FourierAlias.cutoffAlias_supported_on_transition,NavierStokes/FourierAlias.lean:182-200,0,not found,"The exact defect is supported in the transition interval of the cutoff, which may be strictly inside the radial support interval of the source."
+NavierStokes.FourierAlias.cutoffAlias_zero_mean,NavierStokes/FourierAlias.lean:213-219,0,not found,
+NavierStokes.FourierAlias.fourierSourceJet_eq_parameterJet,NavierStokes/FourierAlias.lean:497-508,0,not found,"The interleaved construction is exactly the manuscript's slow derivative of the iterated Fourier inverse, because the actual operators commute."
+NavierStokes.FourierAlias.fourierSourceJet_properties,NavierStokes/FourierAlias.lean:522-538,0,not found,
+NavierStokes.FourierAlias.intervalIntegral_comm,NavierStokes/FourierAlias.lean:80-89,0,not found,Fubini on two compact real intervals.
+NavierStokes.FourierAlias.inverse_frequency_power_le_epsilon,NavierStokes/FourierAlias.lean:654-674,0,not found,For each requested epsilon power one fixed finite IBP order suffices.
+NavierStokes.FourierAlias.inverse_radiallySupported,NavierStokes/FourierAlias.lean:510-520,0,not found,
+NavierStokes.FourierAlias.iteratedFDeriv_cutoffAlias_sourceJet,NavierStokes/FourierAlias.lean:400-417,0,not found,"Differentiate the exact scalar IBP identity. This controls full derivative tensors, including every ordinary mixed coordinate derivative."
+NavierStokes.FourierAlias.iteratedFDeriv_periodic,NavierStokes/FourierAlias.lean:229-239,0,not found,
+NavierStokes.FourierAlias.nonbarPart_periodic,NavierStokes/FourierAlias.lean:432-435,0,not found,
+NavierStokes.FourierAlias.nonbarPart_radiallySupported,NavierStokes/FourierAlias.lean:448-460,0,not found,
+NavierStokes.FourierAlias.nonbarPart_zeroMean,NavierStokes/FourierAlias.lean:437-446,0,not found,
+NavierStokes.FourierAlias.periodic_finiteJet_bound,NavierStokes/FourierAlias.lean:241-273,0,not found,Actual smooth periodic fields have bounded finite prefixes of full Fréchet jets on every compact radial slab.
+NavierStokes.FourierAlias.periodic_integral_translate,NavierStokes/FourierAlias.lean:56-59,0,not found,
+NavierStokes.FourierAlias.radial_cutoffAlias_superflat,NavierStokes/FourierAlias.lean:720-739,0,not found,"Specialization to the manuscript's explicitly constructed radial frequency, whose reciprocal bound is already proved in `ChartScales`."
+NavierStokes.FourierAlias.torusMean_const,NavierStokes/FourierAlias.lean:102-103,0,not found,
+NavierStokes.FourierAlias.torusMean_eq_haar,NavierStokes/FourierAlias.lean:602-606,0,not found,The square average is the normalized Haar average of the actual descent.
+NavierStokes.FourierAlias.torusPeriodic_first,NavierStokes/FourierAlias.lean:45-48,0,not found,
+NavierStokes.FourierAlias.torusPeriodic_second,NavierStokes/FourierAlias.lean:51-54,0,not found,
+NavierStokes.FourierAlias.totalIntegral_nonbarPart,NavierStokes/FourierAlias.lean:462-481,0,not found,
+NavierStokes.FourierAlias.totalIntegral_periodic,NavierStokes/FourierAlias.lean:165-174,0,not found,
+NavierStokes.FourierAlias.totalIntegral_sourceJet,NavierStokes/FourierAlias.lean:372-387,0,not found,"The existing repeated IBP identity, now for the actual U-dependent total integral. No alias is discarded."
+NavierStokes.FourierAlias.transport_compact_eq_sub_alias,NavierStokes/FourierAlias.lean:221-227,0,not found,The alias is an exact term in the constructed inverse identity.
 NavierStokes.GaugeMomentBalances.LocalField.add,NavierStokes/GaugeMomentBalances.lean:191-200,0,not found,
 NavierStokes.GaugeMomentBalances.LocalField.localize,NavierStokes/GaugeMomentBalances.lean:205-210,0,not found,
 NavierStokes.GaugeMomentBalances.LocalField.localize_periodic,NavierStokes/GaugeMomentBalances.lean:212-216,0,not found,
@@ -825,6 +1035,34 @@ NavierStokes.IntegratedMeanBalances.weighted_angular_viscosity_ae,NavierStokes/I
 NavierStokes.IntegratedMeanBalances.weighted_axial_divergence_ae,NavierStokes/IntegratedMeanBalances.lean:99-104,0,not found,
 NavierStokes.IntegratedMeanBalances.weighted_axial_viscosity_ae,NavierStokes/IntegratedMeanBalances.lean:173-178,0,not found,
 NavierStokes.IntegratedMeanBalances.zero_of_not_mem_interval,NavierStokes/IntegratedMeanBalances.lean:751-754,0,not found,
+NavierStokes.LocalSignedRequest.chartKernel_unweighted,NavierStokes/LocalSignedRequest.lean:484-500,0,yes,
+NavierStokes.LocalSignedRequest.class_comp,NavierStokes/LocalSignedRequest.lean:57-96,0,yes,
+NavierStokes.LocalSignedRequest.class_localPullback,NavierStokes/LocalSignedRequest.lean:98-105,0,yes,
+NavierStokes.LocalSignedRequest.compact_fiberLocal,NavierStokes/LocalSignedRequest.lean:342-348,0,yes,
+NavierStokes.LocalSignedRequest.fderiv_slowLift,NavierStokes/LocalSignedRequest.lean:983-991,0,not found,
+NavierStokes.LocalSignedRequest.inverseProfileMap_positiveJets,NavierStokes/LocalSignedRequest.lean:246-254,0,yes,
+NavierStokes.LocalSignedRequest.inverseProfileMap_profile,NavierStokes/LocalSignedRequest.lean:142-149,0,yes,
+NavierStokes.LocalSignedRequest.inverseProfile_source_supported,NavierStokes/LocalSignedRequest.lean:477-482,0,yes,
+NavierStokes.LocalSignedRequest.length_unweighted,NavierStokes/LocalSignedRequest.lean:502-510,0,yes,
+NavierStokes.LocalSignedRequest.meanClass_barSigma,NavierStokes/LocalSignedRequest.lean:444-461,0,yes,
+NavierStokes.LocalSignedRequest.meanClass_centered,NavierStokes/LocalSignedRequest.lean:551-560,0,not found,
+NavierStokes.LocalSignedRequest.meanClass_inverseProfileMap,NavierStokes/LocalSignedRequest.lean:293-333,0,yes,
+NavierStokes.LocalSignedRequest.meanClass_sigma,NavierStokes/LocalSignedRequest.lean:421-442,0,yes,
+NavierStokes.LocalSignedRequest.normalizedRequest_frozen,NavierStokes/LocalSignedRequest.lean:632-636,0,yes,
+NavierStokes.LocalSignedRequest.normalizedRequest_represents,NavierStokes/LocalSignedRequest.lean:760-794,0,not found,"Exact Q-normalization of one physical primitive. The hypotheses refer to the actual represented source, not to the desired stress or its bounds."
+NavierStokes.LocalSignedRequest.physicalBarSigma_eq_negative_primitive,NavierStokes/LocalSignedRequest.lean:855-865,0,not found,
+NavierStokes.LocalSignedRequest.physicalBarSigma_profile,NavierStokes/LocalSignedRequest.lean:523-529,0,yes,
+NavierStokes.LocalSignedRequest.physicalBarSigma_slice_compact,NavierStokes/LocalSignedRequest.lean:920-929,0,not found,
+NavierStokes.LocalSignedRequest.physicalBarSigma_supported,NavierStokes/LocalSignedRequest.lean:905-918,0,not found,
+NavierStokes.LocalSignedRequest.physicalDensity_meanClass,NavierStokes/LocalSignedRequest.lean:961-981,0,not found,
+NavierStokes.LocalSignedRequest.physicalSigma_scaled_fiber,NavierStokes/LocalSignedRequest.lean:685-705,0,yes,Physical radial scaling changes a primitive by exactly one length factor.
+NavierStokes.LocalSignedRequest.profileMap_inverse,NavierStokes/LocalSignedRequest.lean:134-140,0,yes,
+NavierStokes.LocalSignedRequest.profileMap_positiveJets,NavierStokes/LocalSignedRequest.lean:236-244,0,yes,
+NavierStokes.LocalSignedRequest.sigma_fiberLocal,NavierStokes/LocalSignedRequest.lean:403-411,0,yes,
+NavierStokes.LocalSignedRequest.sigma_fiber_congr,NavierStokes/LocalSignedRequest.lean:670-676,0,yes,
+NavierStokes.LocalSignedRequest.stress_unit_factor,NavierStokes/LocalSignedRequest.lean:755-758,0,not found,
+NavierStokes.LocalSignedRequest.torusAverage_coverPull_local,NavierStokes/LocalSignedRequest.lean:707-725,0,yes,
+NavierStokes.LocalSignedRequest.torusAverage_inverseProfileMap,NavierStokes/LocalSignedRequest.lean:531-533,0,yes,
 NavierStokes.MeanChartCompatibility.centered_coverPull,NavierStokes/MeanChartCompatibility.lean:382-393,0,yes,
 NavierStokes.MeanChartCompatibility.commonTemporalIncrement_native,NavierStokes/MeanChartCompatibility.lean:976-980,0,not found,
 NavierStokes.MeanChartCompatibility.commonTemporalPotential_supported,NavierStokes/MeanChartCompatibility.lean:991-998,0,not found,
@@ -869,9 +1107,7 @@ NavierStokes.MeanChartCompatibility.streamAlias_pull,NavierStokes/MeanChartCompa
 NavierStokes.MeanChartCompatibility.streamBeta_pull,NavierStokes/MeanChartCompatibility.lean:288-295,0,not found,
 NavierStokes.MeanChartCompatibility.streamGamma_pull,NavierStokes/MeanChartCompatibility.lean:277-286,0,not found,
 NavierStokes.MeanChartCompatibility.temporalAtIndex_native,NavierStokes/MeanChartCompatibility.lean:504-505,0,not found,
-NavierStokes.MeanChartCompatibility.temporalAtIndex_physical_pull,NavierStokes/MeanChartCompatibility.lean:511-539,0,not found,All common indices give the same physical temporal operator after the actual velocity and momentum normalizations.
 NavierStokes.MeanChartCompatibility.temporalFamily_represents,NavierStokes/MeanChartCompatibility.lean:806-819,0,not found,
-NavierStokes.MeanChartCompatibility.temporalInverse_coverPull,NavierStokes/MeanChartCompatibility.lean:439-451,0,yes,
 NavierStokes.MeanChartCompatibility.temporalInverse_parameterPull,NavierStokes/MeanChartCompatibility.lean:427-437,0,yes,
 NavierStokes.MeanChartCompatibility.temporal_physical_pull,NavierStokes/MeanChartCompatibility.lean:463-494,0,not found,The physical temporal update is one fixed Fourier operator. The native cover factor and the momentum/velocity unit factors cancel exactly.
 NavierStokes.MeanChartCompatibility.torusAverage_coverPull,NavierStokes/MeanChartCompatibility.lean:346-352,0,yes,
@@ -1027,6 +1263,34 @@ NavierStokes.MeanResidual.spatial_second,NavierStokes/MeanResidual.lean:277-284,
 NavierStokes.MeanResidual.temporal_direction,NavierStokes/MeanResidual.lean:286-293,0,not found,
 NavierStokes.MeanResidual.total_periodic,NavierStokes/MeanResidual.lean:713-718,0,not found,
 NavierStokes.ParameterizedMomentRepair.same_branch_finite_jet_bound,NavierStokes/ParameterizedMomentRepair.lean:43-93,0,not found,A parameter slice selected in a common uniform correction ball has the same exact finite-jet estimate as the canonical C⁰ Picard branch.
+NavierStokes.ParametricTorusInverse.PolynomialGrowth.mulX,NavierStokes/ParametricTorusInverse.lean:253-263,0,not found,
+NavierStokes.ParametricTorusInverse.PolynomialGrowth.mulY,NavierStokes/ParametricTorusInverse.lean:265-275,0,not found,
+NavierStokes.ParametricTorusInverse.applyMultiplier_smooth_nat,NavierStokes/ParametricTorusInverse.lean:460-482,0,not found,"Joint smoothness is derived from actual locally uniform Fourier differentiation, allowing arbitrary polynomially growing multipliers."
+NavierStokes.ParametricTorusInverse.exists_uniform_coefficient_bound,NavierStokes/ParametricTorusInverse.lean:216-245,0,not found,"Uniform polynomial decay on any fixed compact parameter interval, derived from bounds for actual torus derivatives."
+NavierStokes.ParametricTorusInverse.fderiv_applyMultiplier,NavierStokes/ParametricTorusInverse.lean:442-458,0,not found,
+NavierStokes.ParametricTorusInverse.fixedPartial_periodic,NavierStokes/ParametricTorusInverse.lean:72-82,0,not found,
+NavierStokes.ParametricTorusInverse.hasFDerivAt_applyMultiplier,NavierStokes/ParametricTorusInverse.lean:420-440,0,not found,
+NavierStokes.ParametricTorusInverse.hasFDerivAt_multiplierTerm,NavierStokes/ParametricTorusInverse.lean:353-379,0,not found,
+NavierStokes.ParametricTorusInverse.integral_hasDerivAt,NavierStokes/ParametricTorusInverse.lean:153-167,0,yes,Differentiation of an actual fixed-interval integral.
+NavierStokes.ParametricTorusInverse.inverse_eq_applyMultiplier,NavierStokes/ParametricTorusInverse.lean:322-323,0,not found,
+NavierStokes.ParametricTorusInverse.inverse_preserves_parameter_support,NavierStokes/ParametricTorusInverse.lean:540-546,0,not found,
+NavierStokes.ParametricTorusInverse.iterateInverse_preserves_parameter_support,NavierStokes/ParametricTorusInverse.lean:629-636,0,not found,
+NavierStokes.ParametricTorusInverse.iterateInverse_solves,NavierStokes/ParametricTorusInverse.lean:622-627,0,not found,
+NavierStokes.ParametricTorusInverse.iterateInverse_zeroMean,NavierStokes/ParametricTorusInverse.lean:595-602,0,not found,
+NavierStokes.ParametricTorusInverse.kernel_eq_mode,NavierStokes/ParametricTorusInverse.lean:142-145,0,yes,
+NavierStokes.ParametricTorusInverse.multiplied_coeff_rapid,NavierStokes/ParametricTorusInverse.lean:325-328,0,not found,
+NavierStokes.ParametricTorusInverse.norm_multiplierTermDerivative_le,NavierStokes/ParametricTorusInverse.lean:381-397,0,not found,
+NavierStokes.ParametricTorusInverse.parameterJet_iterateInverse,NavierStokes/ParametricTorusInverse.lean:613-620,0,not found,
+NavierStokes.ParametricTorusInverse.parameterJet_periodic,NavierStokes/ParametricTorusInverse.lean:104-110,0,not found,
+NavierStokes.ParametricTorusInverse.parameterJet_zeroMean,NavierStokes/ParametricTorusInverse.lean:554-560,0,not found,
+NavierStokes.ParametricTorusInverse.parameterPartial_inverse,NavierStokes/ParametricTorusInverse.lean:500-502,0,not found,
+NavierStokes.ParametricTorusInverse.parameterPartial_iterateInverse,NavierStokes/ParametricTorusInverse.lean:604-611,0,not found,
+NavierStokes.ParametricTorusInverse.slice_hasFDerivAt,NavierStokes/ParametricTorusInverse.lean:122-126,0,not found,
+NavierStokes.ParametricTorusInverse.slice_torusXJet,NavierStokes/ParametricTorusInverse.lean:134-140,0,not found,
+NavierStokes.ParametricTorusInverse.slice_torusXPartial,NavierStokes/ParametricTorusInverse.lean:128-132,0,not found,
+NavierStokes.ParametricTorusInverse.torusXPartial_periodic,NavierStokes/ParametricTorusInverse.lean:87-88,0,not found,
+NavierStokes.ParametricTorusInverse.uniform_multiplied_coeff_bound,NavierStokes/ParametricTorusInverse.lean:311-317,0,not found,
+NavierStokes.ParametricTorusInverse.uniform_multiplierDerivative_bound,NavierStokes/ParametricTorusInverse.lean:399-418,0,not found,
 NavierStokes.PhysicalMeanDomain.FiberGerm.eventuallyEq,NavierStokes/PhysicalMeanDomain.lean:79-85,0,not found,
 NavierStokes.PhysicalMeanDomain.FiberLocal.contDiffOn,NavierStokes/PhysicalMeanDomain.lean:743-752,0,not found,
 NavierStokes.PhysicalMeanDomain.FiberLocal.contDiffOn_of_periodic,NavierStokes/PhysicalMeanDomain.lean:754-764,0,not found,
@@ -1133,6 +1397,38 @@ NavierStokes.PressureStream.torusAverage_physicalCompact,NavierStokes/PressureSt
 NavierStokes.PressureStream.torusAverage_physicalCompact_of_mass_zero,NavierStokes/PressureStream.lean:660-680,0,not found,Zero integrated bar mass removes the compactification term from the bar exactly. This is an identity on the whole radial line.
 NavierStokes.PressureStream.torusAverage_pressureSource,NavierStokes/PressureStream.lean:173-177,0,yes,
 NavierStokes.PressureStream.torusMean_shifted_integral,NavierStokes/PressureStream.lean:557-570,0,not found,"Fubini and translation invariance give the mean of a genuinely shifted physical radial integral, retaining all slow parameters."
+NavierStokes.R3DifferenceStress.stress_divergence,NavierStokes/R3DifferenceStress.lean:67-97,0,not found,
+NavierStokes.R3DifferenceStress.stress_norm,NavierStokes/R3DifferenceStress.lean:29-50,0,not found,
+NavierStokes.R3DifferenceStress.tensor_divergence,NavierStokes/R3DifferenceStress.lean:52-65,0,not found,
+NavierStokes.RadialPullback.auxiliaryDeriv_pullback,NavierStokes/RadialPullback.lean:279-289,0,not found,Pure auxiliary derivatives are unchanged by the radial coordinate map.
+NavierStokes.RadialPullback.delta_scale_lower,NavierStokes/RadialPullback.lean:513-523,0,yes,
+NavierStokes.RadialPullback.delta_scale_reverse_lower,NavierStokes/RadialPullback.lean:525-529,0,yes,
+NavierStokes.RadialPullback.deriv_interiorCutoff_zero_right,NavierStokes/RadialPullback.lean:427-432,0,yes,
+NavierStokes.RadialPullback.edge_scaled,NavierStokes/RadialPullback.lean:531-535,0,yes,
+NavierStokes.RadialPullback.inverseChart_gt_right,NavierStokes/RadialPullback.lean:139-145,0,yes,
+NavierStokes.RadialPullback.inverseChart_lt_left,NavierStokes/RadialPullback.lean:127-132,0,yes,
+NavierStokes.RadialPullback.inverseChart_power,NavierStokes/RadialPullback.lean:101-105,0,yes,
+NavierStokes.RadialPullback.liftChart_hasFDerivAt,NavierStokes/RadialPullback.lean:180-184,0,yes,
+NavierStokes.RadialPullback.liftChart_jet_aux_independent,NavierStokes/RadialPullback.lean:603-622,0,yes,Positive-order derivatives of a radial coordinate change are independent of the auxiliary base point. This follows from translation identities.
+NavierStokes.RadialPullback.liftChart_positive_jets_bound,NavierStokes/RadialPullback.lean:624-644,0,yes,
+NavierStokes.RadialPullback.logLength_power,NavierStokes/RadialPullback.lean:510-511,0,yes,
+NavierStokes.RadialPullback.logPosition_power,NavierStokes/RadialPullback.lean:503-508,0,yes,
+NavierStokes.RadialPullback.normalizeSource_at_power,NavierStokes/RadialPullback.lean:203-206,0,yes,
+NavierStokes.RadialPullback.physicalAlias_eq_cutoff_derivative,NavierStokes/RadialPullback.lean:394-399,0,yes,
+NavierStokes.RadialPullback.physicalCompact_finiteJets_uniform,NavierStokes/RadialPullback.lean:753-806,0,not found,"The complete physical inverse preserves the original exponential weight and the same finite inverse-edge degree. All constants precede the arbitrary transport shift, source, amplitude, and evaluation "
+NavierStokes.RadialPullback.physicalGraphDeriv_pullback,NavierStokes/RadialPullback.lean:261-277,0,yes,The physical radial graph derivative is the transformed transport derivative multiplied by the actual power-coordinate Jacobian.
+NavierStokes.RadialPullback.positiveRadius_eq_left,NavierStokes/RadialPullback.lean:33-36,0,yes,
+NavierStokes.RadialPullback.positiveRadius_le_max,NavierStokes/RadialPullback.lean:53-62,0,yes,
+NavierStokes.RadialPullback.powerChart_gt_right,NavierStokes/RadialPullback.lean:134-137,0,yes,
+NavierStokes.RadialPullback.powerChart_hasDerivAt,NavierStokes/RadialPullback.lean:163-168,0,yes,
+NavierStokes.RadialPullback.powerChart_inverse,NavierStokes/RadialPullback.lean:107-115,0,not found,
+NavierStokes.RadialPullback.power_substitution,NavierStokes/RadialPullback.lean:291-302,0,yes,The positive power substitution includes the actual radial Jacobian.
+NavierStokes.RadialPullback.pullback_supported,NavierStokes/RadialPullback.lean:247-256,0,yes,
+NavierStokes.RadialPullback.supported_meanClass_physicalCompact,NavierStokes/RadialPullback.lean:843-856,0,not found,
+NavierStokes.RadialPullback.total_normalized_eq_radialIntegral,NavierStokes/RadialPullback.lean:324-334,0,not found,The total transformed integral has exactly the original physical radial measure. In particular no Jacobian remains when taking a torus mean later.
+NavierStokes.RadialPullback.weight_scale_forward,NavierStokes/RadialPullback.lean:543-556,0,yes,
+NavierStokes.RadialPullback.weight_scale_reverse,NavierStokes/RadialPullback.lean:558-574,0,yes,
+NavierStokes.RadialPullback.zeta_scaled,NavierStokes/RadialPullback.lean:537-541,0,yes,
 NavierStokes.SignedMeanGain.Geometry.average_congr,NavierStokes/SignedMeanGain.lean:613-616,0,not found,
 NavierStokes.SignedMeanGain.Geometry.average_mem,NavierStokes/SignedMeanGain.lean:606-611,0,not found,
 NavierStokes.SignedMeanGain.Geometry.domain_open,NavierStokes/SignedMeanGain.lean:576-576,0,not found,
@@ -1312,7 +1608,6 @@ NavierStokes.SlowResidualMatching.zStress_identity,NavierStokes/SlowResidualMatc
 NavierStokes.SlowResidualMatching.zStress_smoothAt,NavierStokes/SlowResidualMatching.lean:437-442,0,not found,
 NavierStokes.SmoothFamilyTorusInverse.JetBound.fixedPartial,NavierStokes/SmoothFamilyTorusInverse.lean:661-667,0,not found,
 NavierStokes.SmoothFamilyTorusInverse.JetBound.mono_order,NavierStokes/SmoothFamilyTorusInverse.lean:656-658,0,not found,
-NavierStokes.SmoothFamilyTorusInverse.applyMultiplier_finiteJets,NavierStokes/SmoothFamilyTorusInverse.lean:847-861,0,yes,
 NavierStokes.SmoothFamilyTorusInverse.applyMultiplier_smooth_nat,NavierStokes/SmoothFamilyTorusInverse.lean:531-565,0,yes,
 NavierStokes.SmoothFamilyTorusInverse.centered_inverse_solves,NavierStokes/SmoothFamilyTorusInverse.lean:1014-1018,0,not found,
 NavierStokes.SmoothFamilyTorusInverse.clm_parameter_expansion,NavierStokes/SmoothFamilyTorusInverse.lean:380-384,0,yes,
@@ -1353,7 +1648,6 @@ NavierStokes.SmoothFamilyTorusInverse.tensorTorusWord_replicate,NavierStokes/Smo
 NavierStokes.SmoothFamilyTorusInverse.tensorTorusWord_scalar,NavierStokes/SmoothFamilyTorusInverse.lean:329-335,0,not found,
 NavierStokes.SmoothFamilyTorusInverse.uniform_multiplied_coeff_bound,NavierStokes/SmoothFamilyTorusInverse.lean:226-234,0,yes,
 NavierStokes.SmoothFamilyTorusInverse.uniform_multiplierDerivative_bound,NavierStokes/SmoothFamilyTorusInverse.lean:459-484,0,yes,
-NavierStokes.TemporalMeanUpdate.absoluteInverse_coverMap,NavierStokes/TemporalMeanUpdate.lean:244-278,0,yes,The native factor is forced by the covering derivative and zero-mean uniqueness. Both sides are the actual Fourier-defined inverse.
 NavierStokes.TemporalMeanUpdate.absoluteInverse_periodic,NavierStokes/TemporalMeanUpdate.lean:222-225,0,yes,
 NavierStokes.TemporalMeanUpdate.absoluteInverse_solves,NavierStokes/TemporalMeanUpdate.lean:238-242,0,yes,
 NavierStokes.TemporalMeanUpdate.absoluteInverse_zeroMean,NavierStokes/TemporalMeanUpdate.lean:227-236,0,yes,
@@ -1397,7 +1691,6 @@ NavierStokes.TemporalMeanUpdate.sourceToFamily_periodic,NavierStokes/TemporalMea
 NavierStokes.TemporalMeanUpdate.squareAverage_re,NavierStokes/TemporalMeanUpdate.lean:396-410,0,yes,Taking a real part commutes with the actual double integral.
 NavierStokes.TemporalMeanUpdate.swap_partialY,NavierStokes/TemporalMeanUpdate.lean:83-91,0,yes,
 NavierStokes.TemporalMeanUpdate.temporalInverse_zeroMean,NavierStokes/TemporalMeanUpdate.lean:477-490,0,yes,
-NavierStokes.TemporalMeanUpdate.timeDerivative_coverMap,NavierStokes/TemporalMeanUpdate.lean:204-213,0,yes,
 NavierStokes.TemporalMeanUpdate.timeDerivative_eq_partials,NavierStokes/TemporalMeanUpdate.lean:102-108,0,yes,
 NavierStokes.TemporalMeanUpdate.timeDerivative_unique,NavierStokes/TemporalMeanUpdate.lean:126-143,0,yes,Uniqueness for the smooth periodic temporal equation with a prescribed mean. The proof uses actual Fourier differentiation and reconstruction.
 NavierStokes.TorusInverse.Rapid.coefficientWord,NavierStokes/TorusInverse.lean:464-468,0,not found,
@@ -1436,6 +1729,76 @@ NavierStokes.TorusInverse.series_periodic,NavierStokes/TorusInverse.lean:376-380
 NavierStokes.TorusInverse.summable_derivativeMajorant,NavierStokes/TorusInverse.lean:136-139,0,yes,
 NavierStokes.TorusInverse.summable_termDeriv,NavierStokes/TorusInverse.lean:150-152,0,yes,
 NavierStokes.TorusInverse.termDeriv_direction,NavierStokes/TorusInverse.lean:307-320,0,yes,
+NavierStokes.TransportPrimitive.auxiliaryDeriv_compactIntegral,NavierStokes/TransportPrimitive.lean:407-413,0,not found,
+NavierStokes.TransportPrimitive.compactIntegral_norm_le,NavierStokes/TransportPrimitive.lean:602-616,0,not found,
+NavierStokes.TransportPrimitive.fixedDeriv_compactIntegral,NavierStokes/TransportPrimitive.lean:368-393,0,yes,The cutoff product rule retains the actual ordinary radial derivative.
+NavierStokes.TransportPrimitive.fixedDeriv_pastIntegral,NavierStokes/TransportPrimitive.lean:302-309,0,yes,
+NavierStokes.TransportPrimitive.fixedDeriv_totalIntegral,NavierStokes/TransportPrimitive.lean:311-318,0,yes,
+NavierStokes.TransportPrimitive.futureIntegral_norm_le,NavierStokes/TransportPrimitive.lean:850-865,0,not found,
+NavierStokes.TransportPrimitive.iteratedFDeriv_compactIntegral_uniform,NavierStokes/TransportPrimitive.lean:768-805,0,not found,Uniform all-order operator-norm estimate from a finite list of genuine source and cutoff derivative bounds. The constant contains no translation parameter.
+NavierStokes.TransportPrimitive.iteratedFDeriv_futureIntegral_norm_le,NavierStokes/TransportPrimitive.lean:867-874,0,not found,
+NavierStokes.TransportPrimitive.iteratedFDeriv_pastIntegral_norm_le,NavierStokes/TransportPrimitive.lean:711-718,0,not found,
+NavierStokes.TransportPrimitive.parameterDerivative_shifted,NavierStokes/TransportPrimitive.lean:255-262,0,yes,
+NavierStokes.TransportPrimitive.parameterIntegral_contDiff_nat,NavierStokes/TransportPrimitive.lean:82-98,0,yes,"Smoothness of a genuine integral over a fixed finite interval, with arbitrary normed parameter space and Banach-valued output."
+NavierStokes.TransportPrimitive.pastIntegral_eq_interval,NavierStokes/TransportPrimitive.lean:177-188,0,yes,The past integral is locally a finite interval integral with fixed endpoints.
+NavierStokes.TransportPrimitive.pastIntegral_eq_supportInterval,NavierStokes/TransportPrimitive.lean:509-519,0,yes,
+NavierStokes.TransportPrimitive.pastIntegral_eventually_eq_interval,NavierStokes/TransportPrimitive.lean:201-208,0,yes,
+NavierStokes.TransportPrimitive.pastIntegral_hasFDerivAt,NavierStokes/TransportPrimitive.lean:264-274,0,yes,The entire Fréchet derivative commutes with the fixed-u past integral.
+NavierStokes.TransportPrimitive.radial_zero_of_gt,NavierStokes/TransportPrimitive.lean:172-175,0,yes,
+NavierStokes.TransportPrimitive.shift_hasDerivAt,NavierStokes/TransportPrimitive.lean:320-325,0,yes,
+NavierStokes.TransportPrimitive.shifted_hasDerivAt,NavierStokes/TransportPrimitive.lean:327-331,0,yes,
+NavierStokes.TransportPrimitive.shifted_support_subset,NavierStokes/TransportPrimitive.lean:150-156,0,yes,
+NavierStokes.TransportPrimitive.totalIntegral_eq_interval,NavierStokes/TransportPrimitive.lean:190-199,0,yes,
+NavierStokes.TransportPrimitive.totalIntegral_eq_supportInterval,NavierStokes/TransportPrimitive.lean:521-530,0,yes,
+NavierStokes.TransportPrimitive.totalIntegral_eventually_eq_interval,NavierStokes/TransportPrimitive.lean:210-219,0,yes,
+NavierStokes.TransportPrimitive.totalIntegral_hasFDerivAt,NavierStokes/TransportPrimitive.lean:276-287,0,yes,
+NavierStokes.TransportPrimitive.transport_eq_partials,NavierStokes/TransportPrimitive.lean:361-366,0,not found,This derivative is exactly `∂U + M v·∂Y`.
+NavierStokes.TransportPrimitive.transport_totalIntegral,NavierStokes/TransportPrimitive.lean:346-359,0,yes,The complete translated integral is constant along each transport line.
+NavierStokes.UniformFourierAlias.complexify_parameterPeriodic,NavierStokes/UniformFourierAlias.lean:452-455,0,yes,
+NavierStokes.UniformFourierAlias.complexify_realCentered,NavierStokes/UniformFourierAlias.lean:491-496,0,yes,
+NavierStokes.UniformFourierAlias.complexify_supported,NavierStokes/UniformFourierAlias.lean:304-310,0,yes,
+NavierStokes.UniformFourierAlias.exactAlias_complexify,NavierStokes/UniformFourierAlias.lean:326-331,0,not found,
+NavierStokes.UniformFourierAlias.exactAlias_eq_realCenterSource,NavierStokes/UniformFourierAlias.lean:720-727,0,not found,
+NavierStokes.UniformFourierAlias.exactAlias_finiteJets,NavierStokes/UniformFourierAlias.lean:862-880,0,not found,"The retained alias has the same arbitrary inverse-frequency gain, with all source dependence confined to a finite actual derivative bound."
+NavierStokes.UniformFourierAlias.exactAlias_sourceJet_bound,NavierStokes/UniformFourierAlias.lean:192-226,0,not found,"A source-independent constant for the compactification defect, retaining the entire cutoff Leibniz expansion."
+NavierStokes.UniformFourierAlias.exactAlias_uniform_of_inverse,NavierStokes/UniformFourierAlias.lean:256-284,0,not found,
+NavierStokes.UniformFourierAlias.familyInverse_finiteJets,NavierStokes/UniformFourierAlias.lean:804-821,0,not found,
+NavierStokes.UniformFourierAlias.familyInverse_periodic,NavierStokes/UniformFourierAlias.lean:739-741,0,yes,
+NavierStokes.UniformFourierAlias.familyInverse_zeroMean,NavierStokes/UniformFourierAlias.lean:744-747,0,yes,
+NavierStokes.UniformFourierAlias.familyMean_eq_parameterMean,NavierStokes/UniformFourierAlias.lean:463-465,0,yes,
+NavierStokes.UniformFourierAlias.fiberOperator_preserves_meanClass,NavierStokes/UniformFourierAlias.lean:979-1024,0,not found,"A proved finite loss on each parameter fiber preserves the actual all-order mean class, including its radial weight."
+NavierStokes.UniformFourierAlias.frequency_gain_absorbs_family_growth,NavierStokes/UniformFourierAlias.lean:1068-1113,0,not found,Choose the number of integrations by parts before learning the finite polynomial slow-scale loss of the required source seminorm.
+NavierStokes.UniformFourierAlias.meanClass_alias_superflat,NavierStokes/UniformFourierAlias.lean:1131-1165,0,not found,Band-dependent sources in the actual all-order mean class have uniformly superflat aliases. The proof chooses one finite IBP order before extracting the required source seminorm and its polynomial gro
+NavierStokes.UniformFourierAlias.mean_toProduct,NavierStokes/UniformFourierAlias.lean:651-653,0,yes,
+NavierStokes.UniformFourierAlias.norm_iteratedFDeriv_exactAlias_complexify,NavierStokes/UniformFourierAlias.lean:333-339,0,not found,
+NavierStokes.UniformFourierAlias.norm_iteratedFDeriv_map,NavierStokes/UniformFourierAlias.lean:31-37,0,yes,
+NavierStokes.UniformFourierAlias.norm_iteratedFDeriv_realInverse_le,NavierStokes/UniformFourierAlias.lean:598-609,0,yes,
+NavierStokes.UniformFourierAlias.parameterMean_complexify,NavierStokes/UniformFourierAlias.lean:458-460,0,yes,
+NavierStokes.UniformFourierAlias.periodic_toProduct,NavierStokes/UniformFourierAlias.lean:730-731,0,not found,
+NavierStokes.UniformFourierAlias.radialSlice_supported,NavierStokes/UniformFourierAlias.lean:397-400,0,not found,
+NavierStokes.UniformFourierAlias.realCenterSource_finiteJets,NavierStokes/UniformFourierAlias.lean:823-841,0,not found,
+NavierStokes.UniformFourierAlias.realCentered_eq_re_nonbar,NavierStokes/UniformFourierAlias.lean:499-503,0,yes,
+NavierStokes.UniformFourierAlias.realCentered_periodic,NavierStokes/UniformFourierAlias.lean:506-509,0,yes,
+NavierStokes.UniformFourierAlias.realCentered_preserves_parameter_support,NavierStokes/UniformFourierAlias.lean:512-520,0,yes,
+NavierStokes.UniformFourierAlias.realCentered_zeroMean,NavierStokes/UniformFourierAlias.lean:547-553,0,yes,
+NavierStokes.UniformFourierAlias.realInverse_periodic,NavierStokes/UniformFourierAlias.lean:523-526,0,not found,
+NavierStokes.UniformFourierAlias.realInverse_preserves_parameter_support,NavierStokes/UniformFourierAlias.lean:529-536,0,not found,
+NavierStokes.UniformFourierAlias.realInverse_solves,NavierStokes/UniformFourierAlias.lean:576-596,0,not found,
+NavierStokes.UniformFourierAlias.realInverse_zeroMean,NavierStokes/UniformFourierAlias.lean:560-574,0,not found,
+NavierStokes.UniformFourierAlias.realMeanClass_alias_superflat,NavierStokes/UniformFourierAlias.lean:1230-1254,0,not found,
+NavierStokes.UniformFourierAlias.real_exactAlias_finiteJets_of_integratedMean_zero,NavierStokes/UniformFourierAlias.lean:1210-1228,0,not found,Only the integrated torus mean must vanish. Mean subtraction costs four extra finite derivative orders and changes the exact alias by zero.
+NavierStokes.UniformFourierAlias.real_totalIntegral_finiteJets,NavierStokes/UniformFourierAlias.lean:1177-1191,0,not found,
+NavierStokes.UniformFourierAlias.sourceJet_uniform_finiteJets,NavierStokes/UniformFourierAlias.lean:66-107,0,not found,A finite-loss estimate for an actual operator propagates through the successive slow derivatives used in radial integration by parts. This lemma is instantiated below with the constructed torus invers
+NavierStokes.UniformFourierAlias.sourceMean_complexify,NavierStokes/UniformFourierAlias.lean:435-437,0,yes,
+NavierStokes.UniformFourierAlias.sourceMean_totalIntegral,NavierStokes/UniformFourierAlias.lean:411-420,0,not found,
+NavierStokes.UniformFourierAlias.toProduct_slowDeriv,NavierStokes/UniformFourierAlias.lean:765-773,0,yes,
+NavierStokes.UniformFourierAlias.torusMean_map,NavierStokes/UniformFourierAlias.lean:467-480,0,not found,
+NavierStokes.UniformFourierAlias.totalIntegral_complexify,NavierStokes/UniformFourierAlias.lean:312-316,0,yes,
+NavierStokes.UniformFourierAlias.totalIntegral_finiteJets,NavierStokes/UniformFourierAlias.lean:843-860,0,not found,"Actual, source-uniform finite-seminorm estimate for the translated total integral. Every integration by parts consumes one radial derivative and five orders for the genuine torus inverse."
+NavierStokes.UniformFourierAlias.totalIntegral_radialSlice,NavierStokes/UniformFourierAlias.lean:402-409,0,not found,
+NavierStokes.UniformFourierAlias.totalIntegral_sourceJet_bound,NavierStokes/UniformFourierAlias.lean:155-190,0,not found,"Repeated integration by parts for full derivative tensors. The last premise bounds genuine source jets, not the alias."
+NavierStokes.UniformFourierAlias.totalIntegral_uniform_of_inverse,NavierStokes/UniformFourierAlias.lean:228-254,0,not found,
+NavierStokes.UniformFourierAlias.transport_compact_exactAlias,NavierStokes/UniformFourierAlias.lean:148-153,0,not found,
 NavierStokes.VariableGaugeMean.SupportedGauge.sub,NavierStokes/VariableGaugeMean.lean:2357-2363,0,not found,
 NavierStokes.VariableGaugeMean.chartKernel_unweighted_moving,NavierStokes/VariableGaugeMean.lean:1791-1806,0,yes,
 NavierStokes.VariableGaugeMean.compactAlias_eq_movingTotal,NavierStokes/VariableGaugeMean.lean:2231-2239,0,yes,
@@ -1511,6 +1874,73 @@ NavierStokes.VariableGaugeMean.streamGamma_supportedGauge,NavierStokes/VariableG
 NavierStokes.VariableGaugeMean.stream_unit_factor,NavierStokes/VariableGaugeMean.lean:937-942,0,not found,
 NavierStokes.VariableGaugeMean.sub_jet_norm_le,NavierStokes/VariableGaugeMean.lean:753-764,0,yes,
 NavierStokes.VariableGaugeMean.supportedGauge_containing,NavierStokes/VariableGaugeMean.lean:156-163,0,not found,
-NavierStokes.VariableGaugeMean.temporalAtIndex_fast_cancellation_on,NavierStokes/VariableGaugeMean.lean:2557-2570,0,not found,
 NavierStokes.VariableGaugeMean.transportGauge_finiteJets,NavierStokes/VariableGaugeMean.lean:1250-1393,0,yes,No derivative is taken after the scalar change of integration variable. The estimate uses the original full joint derivatives under the fixed-u integral.
 NavierStokes.VariableGaugeMean.transportIntegrals_jet_bound_fiber,NavierStokes/VariableGaugeMean.lean:436-461,0,yes,
+NavierStokes.WeightedRadialPrimitive.canonical_transport_compact_uniform,NavierStokes/WeightedRadialPrimitive.lean:699-717,0,not found,The cutoff itself is the explicit smooth transition constructed in `TransportPrimitive`; there is no cutoff-existence hypothesis.
+NavierStokes.WeightedRadialPrimitive.compact_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:322-375,0,not found,The actual compactified primitive preserves the same two-edge weighted envelope. The cutoff is only required to have two plateaus and remain bounded; no monotonicity of the weight or inverse estimate 
+NavierStokes.WeightedRadialPrimitive.edge_mono,NavierStokes/WeightedRadialPrimitive.lean:63-75,0,yes,Single-edge monotonicity is proved from the exponential formula.
+NavierStokes.WeightedRadialPrimitive.expCoordinate_mem,NavierStokes/WeightedRadialPrimitive.lean:429-441,0,yes,
+NavierStokes.WeightedRadialPrimitive.expPullback_bound,NavierStokes/WeightedRadialPrimitive.lean:459-471,0,yes,
+NavierStokes.WeightedRadialPrimitive.expPullback_integral,NavierStokes/WeightedRadialPrimitive.lean:450-457,0,yes,"Actual change of variables, including the radial integration Jacobian."
+NavierStokes.WeightedRadialPrimitive.interval_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:295-317,0,not found,Uniform total and partial mass bounds on the finite shell. Endpoint values of the source are immaterial to this Lebesgue-integral statement.
+NavierStokes.WeightedRadialPrimitive.left_base_le_weight,NavierStokes/WeightedRadialPrimitive.lean:173-180,0,yes,
+NavierStokes.WeightedRadialPrimitive.left_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:233-274,0,yes,"The left inverse estimate is uniform at the endpoint, with no loss of the polynomial edge exponent. It applies to arbitrary Banach-valued sources."
+NavierStokes.WeightedRadialPrimitive.left_single_le_weight,NavierStokes/WeightedRadialPrimitive.lean:149-171,0,yes,"Dividing by the opposite-edge value at the midpoint is a fixed constant, independent of the variable tending to the left endpoint."
+NavierStokes.WeightedRadialPrimitive.logPosition_expCoordinate,NavierStokes/WeightedRadialPrimitive.lean:423-427,0,yes,
+NavierStokes.WeightedRadialPrimitive.logWeight_formula,NavierStokes/WeightedRadialPrimitive.lean:402-413,0,not found,"The weight is exactly the manuscript's two logarithmic-edge exponential, with its clipped inverse-edge power."
+NavierStokes.WeightedRadialPrimitive.log_compact_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:537-563,0,not found,The compactified primitive preserves the explicit logarithmic two-edge weight uniformly on the whole positive annulus.
+NavierStokes.WeightedRadialPrimitive.log_interval_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:508-532,0,yes,The entire weighted source has uniformly bounded mass on the positive annulus. This also bounds every interior subinterval.
+NavierStokes.WeightedRadialPrimitive.log_left_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:473-489,0,yes,Left logarithmic-edge estimate in the original positive radial variable. The extra constant is only the fixed upper radial endpoint b.
+NavierStokes.WeightedRadialPrimitive.log_remaining,NavierStokes/WeightedRadialPrimitive.lean:394-400,0,not found,
+NavierStokes.WeightedRadialPrimitive.log_right_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:491-506,0,yes,Right logarithmic-edge estimate in the original positive radial variable.
+NavierStokes.WeightedRadialPrimitive.meanClass_canonical_transport,NavierStokes/WeightedRadialPrimitive.lean:1044-1082,0,not found,The concrete compactified shifted inverse preserves the all-jet mean class `M_α` on the explicit logarithmic annulus. Both radial support and global smoothness of the input are named hypotheses; neith
+NavierStokes.WeightedRadialPrimitive.radial_compact_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:608-626,0,not found,The cutoff can be specified directly in the physical radial coordinate. No logarithmic cutoff regularity or assumed inverse bound is required.
+NavierStokes.WeightedRadialPrimitive.right_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:276-293,0,yes,Reflection gives the corresponding endpoint-uniform right inverse bound.
+NavierStokes.WeightedRadialPrimitive.shifted_radial_compact_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:640-658,0,not found,"Auxiliary translation does not change a radial bound that is uniform in the auxiliary variable. Constants are independent of M, v, and the base point."
+NavierStokes.WeightedRadialPrimitive.single_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:92-120,0,yes,"Compactness of the actual transformed improper integral gives one constant for the primitive, uniformly down to the flat endpoint."
+NavierStokes.WeightedRadialPrimitive.supported_meanClass_canonical_transport,NavierStokes/WeightedRadialPrimitive.lean:1084-1101,0,not found,"The full supported-mean conclusion includes global smoothness and the original radial support, as required by the smooth zero-extension convention."
+NavierStokes.WeightedRadialPrimitive.transport_compact_primitive_uniform,NavierStokes/WeightedRadialPrimitive.lean:679-697,0,not found,"A uniform weighted inverse bound for the manuscript's actual shifted, compactified transport primitive. All shifts are quantified after the constant."
+NavierStokes.WeightedRadialPrimitive.weight_le_left_majorant,NavierStokes/WeightedRadialPrimitive.lean:126-143,0,yes,The two-edge weight on the left half is controlled by two integrable single-edge weights. This includes all powers of the clipped edge distance.
+NavierStokes.WeightedRadialPrimitive.weight_reflect,NavierStokes/WeightedRadialPrimitive.lean:145-147,0,yes,
+NavierStokes.WeightedRadialPrimitive.zeta_le_weight,NavierStokes/WeightedRadialPrimitive.lean:57-61,0,yes,
+NavierStokesR3.PressureFlux.actual_flux_eq_canonicalCutoffFlux,NavierStokes/R3/PressureFlux.lean:211-219,0,not found,
+NavierStokesR3.PressureFlux.canonicalCutoffFlux_bound,NavierStokes/R3/PressureFlux.lean:515-543,0,not found,The full canonical flux with an explicit bound on each tensor component's `L¹` norm.
+NavierStokesR3.PressureFlux.cutoff_commutator_bound,NavierStokes/R3/PressureFlux.lean:463-493,0,not found,
+NavierStokesR3.PressureFlux.cutoff_lipschitz,NavierStokes/R3/PressureFlux.lean:58-66,0,not found,
+NavierStokesR3.PressureFlux.cutoff_pressurePair_bound,NavierStokes/R3/PressureFlux.lean:495-513,0,not found,"One actual canonical pressure component, with the three data norms explicit."
+NavierStokesR3.PressureFlux.exists_uniform_canonicalCutoffFlux_bound,NavierStokes/R3/PressureFlux.lean:545-572,0,not found,One constant works for all radii and all smooth slices satisfying the fixed norm bounds.
+NavierStokesR3.PressureFlux.fluxFunction_compact,NavierStokes/R3/PressureFlux.lean:115-122,0,not found,
+NavierStokesR3.PressureFlux.fluxTest_eq_multiplier_rTest,NavierStokes/R3/PressureFlux.lean:173-177,0,not found,
+NavierStokesR3.PressureFlux.integrable_commutator_pair,NavierStokes/R3/PressureFlux.lean:238-249,0,not found,
+NavierStokesR3.PressureFlux.integrable_holder_pair,NavierStokes/R3/PressureFlux.lean:78-81,0,not found,
+NavierStokesR3.PressureFlux.localized_pair_bound,NavierStokes/R3/PressureFlux.lean:315-353,0,not found,The local part of one canonical pressure component is an actual integrable pairing.
+NavierStokesR3.PressureFlux.lpNorm_fderiv_rTest,NavierStokes/R3/PressureFlux.lean:184-188,0,not found,
+NavierStokesR3.PressureFlux.lpNorm_fderiv_realTest,NavierStokes/R3/PressureFlux.lean:49-56,0,not found,
+NavierStokesR3.PressureFlux.lpNorm_ofReal,NavierStokes/R3/PressureFlux.lean:27-30,0,not found,
+NavierStokesR3.PressureFlux.lpNorm_rTest,NavierStokes/R3/PressureFlux.lean:179-182,0,not found,
+NavierStokesR3.PressureFlux.norm_canonicalCutoffFlux_le,NavierStokes/R3/PressureFlux.lean:204-209,0,not found,
+NavierStokesR3.PressureFlux.norm_canonicalFlux_le,NavierStokes/R3/PressureFlux.lean:137-150,0,not found,
+NavierStokesR3.PressureFlux.norm_cutoff_pressurePair_le_local_commutator,NavierStokes/R3/PressureFlux.lean:355-377,0,not found,
+NavierStokesR3.PressureFlux.norm_fderiv_ofReal,NavierStokes/R3/PressureFlux.lean:32-47,0,not found,
+NavierStokesR3.PressureFlux.norm_holder_pair_le,NavierStokes/R3/PressureFlux.lean:83-104,0,not found,
+NavierStokesR3.PressureFlux.norm_pressurePair_le_local_commutator,NavierStokes/R3/PressureFlux.lean:269-276,0,not found,
+NavierStokesR3.PressureFlux.pressurePair_decomposition,NavierStokes/R3/PressureFlux.lean:251-267,0,not found,
+NavierStokesR3.PressureFlux.rTest_four_bound,NavierStokes/R3/PressureFlux.lean:307-313,0,not found,
+NavierStokesR3.PressureFlux.riesz_rTest_bound,NavierStokes/R3/PressureFlux.lean:289-305,0,not found,
+NavierStokesR3.PressureFlux.rpow_three_fourths_div,NavierStokes/R3/PressureFlux.lean:445-448,0,not found,
+NavierStokesR3.PressureFlux.uniform_expression_bound,NavierStokes/R3/PressureFlux.lean:390-443,0,not found,"Collecting constants uses only the fixed data-norm bounds, not the radius."
+NavierStokesR3.PressureFluxIdentity.integrable_canonical_flux_terms,NavierStokes/R3/PressureFluxIdentity.lean:103-110,0,not found,
+NavierStokesR3.PressureFluxIdentity.sum_partial_realTest_weightedComponent,NavierStokes/R3/PressureFluxIdentity.lean:76-91,0,not found,The compact flux test is the sum of the differentiated component tests.
+NavierStokesR3.PressureFluxIdentity.sum_partial_weightedComponent,NavierStokes/R3/PressureFluxIdentity.lean:61-74,0,not found,
+NavierStokesR3.PressureFluxIdentity.weightedComponent_hasCompactSupport,NavierStokes/R3/PressureFluxIdentity.lean:57-59,0,not found,
+NavierStokesR3.WeightedSobolev.continuous_cutoffGradientAmplitude,NavierStokes/R3/WeightedSobolev.lean:111-114,0,not found,
+NavierStokesR3.WeightedSobolev.fderiv_cutoff_four,NavierStokes/R3/WeightedSobolev.lean:71-76,0,not found,Derivative of the fourth power of a scalar cutoff.
+NavierStokesR3.WeightedSobolev.hasCompactSupport_cutoffGradientAmplitude,NavierStokes/R3/WeightedSobolev.lean:116-121,0,not found,
+NavierStokesR3.WeightedSobolev.hasCompactSupport_cutoff_pow_smul,NavierStokes/R3/WeightedSobolev.lean:53-60,0,not found,"Multiplication by any positive natural power of a compact cutoff preserves compact support, even if the multiplied function is not compactly supported."
+NavierStokesR3.WeightedSobolev.integrable_weighted_gradientSq,NavierStokes/R3/WeightedSobolev.lean:135-142,0,not found,The weighted dissipation integral is finite solely from local regularity.
+NavierStokesR3.WeightedSobolev.lpNorm_fderiv_cutoff_four_le,NavierStokes/R3/WeightedSobolev.lean:175-207,0,not found,The derivative of the cutoff velocity has a finite `L²` bound involving only weighted dissipation and the velocity's unweighted `L²` norm.
+NavierStokesR3.WeightedSobolev.lpNorm_six_le,NavierStokes/R3/WeightedSobolev.lean:37-51,0,not found,Mathlib's homogeneous Sobolev inequality specialized to Euclidean `R³`. The finite derivative norm is supplied by compact support and `C¹` regularity.
+NavierStokesR3.WeightedSobolev.memLp_of_compact,NavierStokes/R3/WeightedSobolev.lean:30-35,0,not found,"Compactly supported continuous functions have finite norms at every exponent, including infinity."
+NavierStokesR3.WeightedSobolev.norm_cutoffGradientAmplitude_sq,NavierStokes/R3/WeightedSobolev.lean:129-133,0,not found,
+NavierStokesR3.WeightedSobolev.norm_fderiv_cutoff_four_le,NavierStokes/R3/WeightedSobolev.lean:78-100,0,not found,The pointwise product rule keeps the derivative of the velocity weighted.
+NavierStokesR3.WeightedSobolev.norm_fderiv_cutoff_four_le_amplitude,NavierStokes/R3/WeightedSobolev.lean:152-173,0,not found,A pointwise majorant with no unweighted derivative term.
