@@ -1,0 +1,4 @@
+# Separate environment for OCR of the paper (Python 3.12). Newer Marker releases run their OCR model behind
+# a vLLM/llama.cpp server; 1.8.4 runs in-process with PyTorch. Install a CUDA build of torch matching your GPU.
+marker-pdf==1.8.4
+surya-ocr==0.15.4

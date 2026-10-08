@@ -1,0 +1,9 @@
+# Main environment (Python 3.12+). Versions are those the published results were produced with.
+openai==2.26.0
+pdfplumber==0.11.9
+pylatexenc==2.11
+scikit-learn==1.8.0
+numpy==2.3.2
+pypdfium2==5.9.0
+# Also needed: pdftotext (poppler or xpdf) on PATH.
+# OCR runs in a separate environment: see requirements-ocr.txt.
