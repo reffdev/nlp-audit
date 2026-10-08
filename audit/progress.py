@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Progress of a running LLM stage, read from data/llm_raw.jsonl (each response is logged as it lands).
 
   python audit/progress.py            # file stage (catalog pass)

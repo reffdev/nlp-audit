@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 2b: LLM candidate generation, paper item -> Lean files -> Lean declarations.
 
 The model locates candidates; it never says whether anything matches correctly. Each call runs

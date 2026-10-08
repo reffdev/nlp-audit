@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 3: structured extraction for (paper item, Lean declaration) pairs. Facts only, never verdicts.
 
 For each pair, 3 independent samples return strict JSON: paper hypotheses/conclusions, Lean
@@ -254,6 +255,29 @@ def validate(con):
         print(f"  {decl}: reported by samples {samples} of 0-2")
         for r in [h for h in hits if h[0] == decl][:3]:
             print(f"    [{r[2]}] lines {r[6]}: {r[5]}")
+    validate_1019(con)
+    return bool(hits)
+
+
+def validate_1019(con):
+    """Second test: for (10.19) in the proof of Lemma 10.5 the Lean bound shares the R^(-7/4) B^(3/4) term
+    but has a different first term (A/R + 1/R^2 instead of R^(-1)(B_R+1)). Passes if a bound difference
+    there mentions that first term."""
+    rows = con.execute("""SELECT p.decl, d.sample, d.type, d.paper_side, d.lean_side, d.description, d.lean_lines
+                          FROM extract_deltas d JOIN extract_pairs p ON p.pair_id = d.pair_id
+                          WHERE p.item = '(10.19) in proof of Lemma 10.5'""").fetchall()
+    if not rows:
+        print("(10.19): no extraction yet")
+        return False
+    first = re.compile(r"A_R|A\s*/\s*R|A_?R\s*/|1\s*/\s*R\s*\^?\s*2|R\^\{?-2|R\s*\^\s*2|first term|\(B_R\s*\+\s*1\)|"
+                       r"B\s*\^\s*\(?1\s*/\s*2\)?\s*\+\s*1", re.I)
+    hits = [r for r in rows if r[2] in ("stronger-bound", "weaker-bound", "different-norm", "other")
+            and first.search(" ".join(map(str, r[3:6])))]
+    print(f"(10.19): {len(rows)} deltas; {len(hits)} bound-type deltas mention the first term")
+    for decl in sorted({r[0] for r in hits}):
+        print(f"  {decl}: samples {sorted({r[1] for r in hits if r[0] == decl})}")
+        for r in [h for h in hits if h[0] == decl][:3]:
+            print(f"    [{r[2]}] lines {r[6]}: {r[5]}")
     return bool(hits)
 
 
@@ -262,6 +286,8 @@ def main():
     ap.add_argument("--section", default="8")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--validate", action="store_true")
+    ap.add_argument("--steps", action="store_true", help="extract proof-step targets instead of paper results")
+    ap.add_argument("--items", default="", help="comma-separated results (with --steps: their parent results)")
     a = ap.parse_args()
     con = sqlite3.connect(DB)
     setup(con)
@@ -269,13 +295,24 @@ def main():
         validate(con)
         return
     con.row_factory = sqlite3.Row
-    items = {r["label"]: dict(r) for r in con.execute("SELECT * FROM paper_items WHERE section=?", (a.section,))}
-    con.row_factory = None
     tag = X.run_tag()
+    wanted = {x.strip() for x in a.items.split(",") if x.strip()}
+    if a.steps:
+        # proof-step targets (audit/proof_steps.py): the step's text plays the role of the statement
+        items = {r["label"]: dict(r, statement=r["statement_latex"], proof_latex=None, proof=None)
+                 for r in con.execute("SELECT * FROM paper_steps")}
+        targets = con.execute("SELECT item, found_all FROM search_status WHERE kind='ProofStep' AND model=?",
+                              (tag,)).fetchall()
+    else:
+        items = {r["label"]: dict(r) for r in con.execute("SELECT * FROM paper_items WHERE section=?", (a.section,))}
+        targets = con.execute("SELECT item, found_all FROM search_status WHERE section=? AND kind != 'ProofStep' "
+                              "AND model=?", (a.section, tag)).fetchall()
+    con.row_factory = None
     task = TASK % "\n".join(f"  {k}: {v}" for k, v in DELTA_TYPES.items())
     jobs = []
-    for item, fa in con.execute("SELECT item, found_all FROM search_status WHERE section=? AND model=?",
-                                (a.section, tag)).fetchall():
+    for item, fa in targets:
+        if wanted and item not in wanted and not any(item.endswith(f"of {w}") for w in wanted):
+            continue
         cands = [c["decl"] for c in json.loads(fa or "[]")]
         it = items[item]
         pctx = paper_context(it, None)

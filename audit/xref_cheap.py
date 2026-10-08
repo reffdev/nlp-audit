@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 2a: cheap candidate mapping from paper items to Lean declarations (no LLM).
 
 Signals, all stored separately so they can be inspected:

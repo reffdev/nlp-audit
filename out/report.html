@@ -32,13 +32,15 @@ details summary { cursor:pointer; color:var(--accent); font-size:13px; }
 .warn { color:var(--mh); }
 .filters label { margin-right:14px; font-size:13px; white-space:nowrap; }
 </style></head><body><main>
-<h1>Navier–Stokes paper vs. Lean: Section 8 audit</h1>
+<h1>Navier–Stokes paper vs. Lean: Section 8 and Lemma 10.5 audit</h1>
 <p class="lead">Where the paper and its Lean formalization state things differently, extracted by a local model
 (3 independent samples per pair, kept separate) with every claim quoted and the quotes checked against the sources.
 This page lists differences. It does not say whether any difference matters. See METHODOLOGY.md.
 Paper: <a href="https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf">navier-stokes.pdf</a> · Lean: openai/NavierStokesAndEuler at <code>f9e8bc5b38b6</code></p>
-<div class="card gate"><b>Validation:</b> the known Lemma 8.6 discrepancy (the paper loses m+4 derivatives, the Lean
-m+5) was reported without any prompt mentioning it:<ul><li><code>SmoothFamilyTorusInverse.inverse_finiteJets</code>, 3/3 samples, <a href="https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/SmoothFamilyTorusInverse.lean#L868">SmoothFamilyTorusInverse.lean:868</a>: The paper loses four derivatives, while the Lean declaration loses five.</li></ul></div>
+<div class="card gate"><b>Validation against the two published discrepancies</b> (Bastounis, Circelli &amp; Hansen,
+<a href="https://arxiv.org/abs/2610.08144">arXiv:2610.08144</a>), reported without any prompt mentioning them:
+Lemma 8.6 (the paper loses m+4 derivatives, the Lean m+5) and eq. (10.19) inside the proof of Lemma 10.5 (the
+pressure-flux bound).<ul><li>Lemma 8.6: <code>SmoothFamilyTorusInverse.inverse_finiteJets</code>, 3/3 samples, <a href="https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/SmoothFamilyTorusInverse.lean#L868">SmoothFamilyTorusInverse.lean:868</a>: The paper loses four derivatives, while the Lean declaration loses five.</li></ul></div>
 
 <h2>Pairs (paper item × Lean declaration), most severe first</h2>
 <p class="lead">Severity order: stronger-bound, missing-hypothesis, different-norm, missing-supremum, different-domain, extra-hypothesis, weaker-bound, other. "Agreed" = reported by all 3 samples at the same Lean lines.

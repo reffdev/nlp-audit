@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Summary of the multi-round search: status per item and the overall distribution.
 
   python audit/search_summary.py

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 4: aggregate the Phase 3 extractions into tables (CSV + one static HTML page).
 
 Differences from the 3 independent samples are GROUPED, never voted: two deltas of the same pair and
@@ -72,6 +73,8 @@ def main():
     repo_commit = (ROOT / "repo" / ".git").exists() and __import__("subprocess").run(
         ["git", "-C", str(ROOT / "repo"), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
     items = {r["label"]: dict(r) for r in con.execute("SELECT * FROM paper_items")}
+    if con.execute("SELECT name FROM sqlite_master WHERE name='paper_steps'").fetchone():
+        items.update({r["label"]: dict(r) for r in con.execute("SELECT * FROM paper_steps")})
     downstream = Counter(r[0] for r in con.execute("SELECT item FROM paper_downstream"))
     downstream_where = defaultdict(list)
     for r in con.execute("SELECT item, cited_from, part, page FROM paper_downstream ORDER BY line"):
@@ -166,9 +169,47 @@ def main():
     gate = [d for d in diffs if d["item"] == "Lemma 8.6" and d["type"] == "stronger-bound"
             and re.search(r"four|\b4\b|\+\s*4", " ".join(d["all_wordings"]), re.I)
             and re.search(r"five|\b5\b|\+\s*5", " ".join(d["all_wordings"]), re.I)]
+    first_term = re.compile(r"A_R|A\s*/\s*R|1\s*/\s*R\s*\^?\s*2|R\^\{?-2|first term|\(B_R\s*\+\s*1\)", re.I)
+    gate += [d for d in diffs if d["item"] == "(10.19) in proof of Lemma 10.5"
+             and d["type"] in ("stronger-bound", "weaker-bound", "different-norm", "other")
+             and first_term.search(" ".join(d["all_wordings"]))]
     write_html(table, diffs, unmatched, orphans, gate, repo_commit, downstream_where, items, pilot_files)
+    write_shortlist(diffs, gate, repo_commit, items)
     print(f"pairs={len(table)} differences={len(diffs)} (3/3: {sum(d['agreement'] == 3 for d in diffs)}) "
           f"unmatched_items={len(unmatched)} orphan_theorems={len(orphans)} -> {OUT}")
+
+
+SHORTLIST_TYPES = ("stronger-bound", "weaker-bound", "different-norm", "missing-supremum")
+
+
+def write_shortlist(diffs, gate, commit, items):
+    """A short list for expert review: differences reported by all 3 samples whose type concerns what is
+    estimated (bounds, norms, uniformity), plus the validation hits. Naming and explicit-hypothesis
+    differences are left to the full tables."""
+    picked = [d for d in diffs if d["agreement"] == 3 and d["type"] in SHORTLIST_TYPES]
+    for g in gate:
+        if g not in picked:
+            picked.append(g)
+    picked.sort(key=lambda d: (d["severity"], d["item"], d["decl"]))
+    out = ["# Review shortlist", "",
+           "Differences between the paper and the Lean formalization that may deserve an expert's attention, "
+           "selected mechanically: reported by all 3 independent samples and concerning what is estimated "
+           "(bound, norm, or uniformity), plus the hits on the two published discrepancies. **Nothing here has "
+           "been reviewed by a mathematician; each entry is a difference in wording, not a claimed error.** "
+           "Full data: `out/differences.csv`; method: `METHODOLOGY.md`.", ""]
+    for k, d in enumerate(picked, start=1):
+        ln = lines_of(d["lean_lines"])
+        url = (f"{REPO_URL}/{commit}/{d['lean_file']}#L{ln[0]}" + (f"-L{ln[1]}" if ln and ln[1] != ln[0] else "")
+               if ln else f"{REPO_URL}/{commit}/{d['lean_file']}")
+        out += [f"## {k}. {d['item']} · `{d['decl'].split('.', 1)[-1]}`", "",
+                f"- **Type:** {d['type']} · reported by {d['agreement']}/3 samples",
+                f"- **Difference:** {d['summary']}",
+                f"- **Paper** ([p.{d['page']}]({PAPER_URL}#page={d['page']}), {d['paper_cite']}): {d['paper_side']}",
+                f"  - quote{'' if d['paper_quote_verified'] else ' (not verified)'}: `{d['paper_quote']}`",
+                f"- **Lean** ([{d['lean_file'].removeprefix('NavierStokes/')}:{d['lean_lines']}]({url})): {d['lean_side']}",
+                f"  - quote{'' if d['lean_quote_verified'] else ' (not verified)'}: `{d['lean_quote']}`", ""]
+    (OUT / "review_shortlist.md").write_text("\n".join(out), encoding="utf-8")
+    print(f"review shortlist: {len(picked)} entries")
 
 
 def esc(s):
@@ -222,7 +263,7 @@ def write_html(table, diffs, unmatched, orphans, gate, commit, downstream_where,
             f'<tr><td colspan="5"><details><summary>{len(ds)} differences</summary>'
             f'<table class="inner"><thead><tr><th>type</th><th>agree</th><th>difference</th></tr></thead>'
             f'<tbody>{"".join(det)}</tbody></table></details></td></tr></tbody>')
-    gate_html = "".join(f"<li><code>{esc(d['decl'].split('.', 1)[-1])}</code>, {d['agreement']}/3 samples, "
+    gate_html = "".join(f"<li>{esc(d['item'])}: <code>{esc(d['decl'].split('.', 1)[-1])}</code>, {d['agreement']}/3 samples, "
                         f"{lean_link(commit, d['lean_file'], d['lean_lines'])}: {esc(d['summary'])}</li>" for d in gate)
     un_html = "".join(f"<tr><td>{esc(u['item'])}</td><td>{esc(u['status'])}</td><td>{u['rounds_tried']}</td>"
                       f"<td><code>{esc(u['best_candidate'])}</code> ({u['candidate_agreement']}/3)</td></tr>" for u in unmatched)
@@ -265,13 +306,15 @@ details summary {{ cursor:pointer; color:var(--accent); font-size:13px; }}
 .warn {{ color:var(--mh); }}
 .filters label {{ margin-right:14px; font-size:13px; white-space:nowrap; }}
 </style></head><body><main>
-<h1>Navier–Stokes paper vs. Lean: Section 8 audit</h1>
+<h1>Navier–Stokes paper vs. Lean: Section 8 and Lemma 10.5 audit</h1>
 <p class="lead">Where the paper and its Lean formalization state things differently, extracted by a local model
 (3 independent samples per pair, kept separate) with every claim quoted and the quotes checked against the sources.
 This page lists differences. It does not say whether any difference matters. See METHODOLOGY.md.
 Paper: <a href="{PAPER_URL}">navier-stokes.pdf</a> · Lean: openai/NavierStokesAndEuler at <code>{esc(commit[:12])}</code></p>
-<div class="card gate"><b>Validation:</b> the known Lemma 8.6 discrepancy (the paper loses m+4 derivatives, the Lean
-m+5) was reported without any prompt mentioning it:<ul>{gate_html or "<li>not found</li>"}</ul></div>
+<div class="card gate"><b>Validation against the two published discrepancies</b> (Bastounis, Circelli &amp; Hansen,
+<a href="https://arxiv.org/abs/2610.08144">arXiv:2610.08144</a>), reported without any prompt mentioning them:
+Lemma 8.6 (the paper loses m+4 derivatives, the Lean m+5) and eq. (10.19) inside the proof of Lemma 10.5 (the
+pressure-flux bound).<ul>{gate_html or "<li>not found</li>"}</ul></div>
 
 <h2>Pairs (paper item × Lean declaration), most severe first</h2>
 <p class="lead">Severity order: {", ".join(SEVERITY)}. "Agreed" = reported by all 3 samples at the same Lean lines.

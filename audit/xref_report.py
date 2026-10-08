@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 2 coverage: how many paper items got a plausible Lean candidate, from sample agreement alone.
 
 Per item, over the 3 independent samples of the declaration stage (no verdicts involved):

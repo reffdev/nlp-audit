@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 1: index of Lean declarations under NavierStokes/.
 
 Source reading only (no elaboration). For every declaration records name (fully qualified

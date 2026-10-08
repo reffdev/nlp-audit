@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 0: structured index of the Navier-Stokes paper.
 
 Reads `pdftotext -enc UTF-8 -layout` output (pages separated by form feeds) and

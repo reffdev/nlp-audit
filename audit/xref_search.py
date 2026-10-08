@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 2c: multi-round search for each paper item's Lean counterpart, with a full audit trail.
 
 Round 1   declaration pool = the files the model picked from the whole catalog (xref_llm.py files).

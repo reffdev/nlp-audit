@@ -1,0 +1,9 @@
+Navier-Stokes paper vs. Lean: correspondence audit
+Copyright 2026 [NAME]
+
+This product includes software licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Documentation and data (out/, METHODOLOGY.md, README.md) are licensed under CC BY 4.0
+(see LICENSE-CC-BY-4.0.md). Short excerpts quoted from the paper "Finite time blowup for
+Navier-Stokes" (OpenAI) and from openai/NavierStokesAndEuler (Apache-2.0) remain under
+their original terms.

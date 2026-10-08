@@ -48,4 +48,7 @@ Third-party sources (the paper, the Lean repository) are fetched, not redistribu
 
 ## License
 
-Not yet chosen.
+- Code (`audit/`): [Apache License 2.0](LICENSE).
+- Documentation and data (`out/`, `METHODOLOGY.md`, this README): [CC BY 4.0](LICENSE-CC-BY-4.0.md).
+- Short excerpts quoted from the paper (OpenAI) and from the Lean source (openai/NavierStokesAndEuler,
+  Apache-2.0) remain under their original terms; they are included only to identify the passages compared.

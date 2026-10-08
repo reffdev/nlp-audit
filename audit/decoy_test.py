@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Decoy test: does a confident "found" mean anything?
 
 For each sampled paper item, show the declaration stage a pool that is unrelated by construction: the

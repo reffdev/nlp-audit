@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Minimal client for an OpenAI-compatible endpoint (vLLM, llama.cpp server, LM Studio, ...).
 
 Configure with environment variables:

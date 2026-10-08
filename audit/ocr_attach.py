@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 0b: attach OCR'd LaTeX to the paper index, cross-checked against the PDF text layer.
 
 Marker (data/ocr/navier-stokes/navier-stokes.json) gives layout-aware LaTeX per block, with a

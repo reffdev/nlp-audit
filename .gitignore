@@ -20,3 +20,5 @@ data/overnight_launch.err
 .claude/
 __pycache__/
 *.pyc
+# Private drafts (not for the public repository)
+drafts/
