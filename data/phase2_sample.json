@@ -1,0 +1,32 @@
+{
+ "seed": 20261007,
+ "section8": [
+  "Proposition 8.1",
+  "Lemma 8.2",
+  "Proposition 8.3",
+  "Proposition 8.4",
+  "Corollary 8.5",
+  "Lemma 8.6",
+  "Lemma 8.7",
+  "Lemma 8.8"
+ ],
+ "random_sample": [
+  "Lemma 7.4",
+  "Lemma 10.3",
+  "Theorem 4.6",
+  "Definition 9.4",
+  "Lemma 4.9",
+  "Lemma 9.2",
+  "Lemma 5.2",
+  "Proposition 4.10",
+  "Lemma A.5",
+  "Lemma 4.3",
+  "Proposition 7.5",
+  "Lemma A.9"
+ ],
+ "anchors": [
+  "Lemma 8.6",
+  "Lemma 10.5"
+ ],
+ "note": "Anchors are excluded from the decl-level coverage estimate; Lemma 8.6 is also a Section 8 item."
+}
