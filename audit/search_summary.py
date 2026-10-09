@@ -6,14 +6,15 @@
 import json
 import sqlite3
 from collections import Counter
-from pathlib import Path
 
-DB = Path(__file__).resolve().parent.parent / "data" / "audit.db"
+import config as C
+
+DB = C.DB
 
 
 def main():
     con = sqlite3.connect(DB)
-    plan = json.loads((DB.parent / "phase2_sample.json").read_text())
+    plan = json.loads(C.PLAN.read_text())
     rows = con.execute("SELECT s.item, s.rounds_tried, s.status, s.found_decl, s.found_agreement "
                        "FROM search_status s JOIN paper_items p ON p.label = s.item ORDER BY p.rowid").fetchall()
     total = con.execute("SELECT COUNT(*) FROM paper_items").fetchone()[0]
@@ -23,7 +24,7 @@ def main():
             "not found" if status.startswith("not found") else "in progress"
 
     for name, members in (("all items", None), ("random sample", set(plan["random_sample"])),
-                          ("section 8", set(plan["section8"]))):
+                          ("pilot", set(plan["pilot"]))):
         sel = [r for r in rows if members is None or r[0] in members]
         c = Counter(bucket(r[2]) for r in sel)
         rounds = Counter(r[1] for r in sel if bucket(r[2]) == "found")

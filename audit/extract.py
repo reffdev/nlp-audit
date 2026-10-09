@@ -7,10 +7,10 @@ and a short proof-route summary per side. Every field quotes the text it relies 
 checked mechanically against the cited Lean lines / paper text, and paper pages are attached from
 the index rather than taken from the model. Downstream uses come from the paper's own citations.
 
-The prompts never mention any specific lemma or known discrepancy; `validate` checks afterwards
-whether the Lemma 8.6 derivative-count difference (4 in the paper, 5 in the Lean) was reported.
+The prompts never mention any specific lemma or known discrepancy; `--validate` checks afterwards
+whether the validation targets listed in audit.toml were reported.
 
-  python audit/extract.py --section 8 --dry-run
+  python audit/extract.py --section 8 --dry-run      # --section defaults to [plan].pilot_section
   python audit/extract.py --section 8
   python audit/extract.py --validate
 Tables: extract_pairs, extract_fields, extract_deltas, paper_downstream.
@@ -23,12 +23,13 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
+import config as C
 import llm
 import xref_llm as X
 
 ROOT = Path(__file__).resolve().parent.parent
-DB = ROOT / "data" / "audit.db"
-REPO = ROOT / "repo"
+DB = C.DB
+REPO = C.REPO
 SAMPLES = 3
 JOB_WORKERS = 5
 MAX_DECL_LINES = 160
@@ -243,47 +244,35 @@ def store(con, pair_id, it, res, shown, paper_text):
 
 
 def validate(con):
-    """Did any Lemma 8.6 sample report the derivative-count difference (4 in the paper, 5 in the Lean)?"""
-    rows = con.execute("""SELECT p.decl, d.sample, d.type, d.paper_side, d.lean_side, d.description, d.lean_lines
-                          FROM extract_deltas d JOIN extract_pairs p ON p.pair_id = d.pair_id
-                          WHERE p.item = 'Lemma 8.6'""").fetchall()
-    hits = [r for r in rows if re.search(r"\+\s*4|four", " ".join(map(str, r[3:6])), re.I)
-            and re.search(r"\+\s*5|five", " ".join(map(str, r[3:6])), re.I)]
-    print(f"Lemma 8.6: {len(rows)} deltas over all its pairs; {len(hits)} mention both the 4 and the 5")
-    for decl in sorted({r[0] for r in hits}):
-        samples = sorted({r[1] for r in hits if r[0] == decl})
-        print(f"  {decl}: reported by samples {samples} of 0-2")
-        for r in [h for h in hits if h[0] == decl][:3]:
-            print(f"    [{r[2]}] lines {r[6]}: {r[5]}")
-    validate_1019(con)
-    return bool(hits)
-
-
-def validate_1019(con):
-    """Second test: for (10.19) in the proof of Lemma 10.5 the Lean bound shares the R^(-7/4) B^(3/4) term
-    but has a different first term (A/R + 1/R^2 instead of R^(-1)(B_R+1)). Passes if a bound difference
-    there mentions that first term."""
-    rows = con.execute("""SELECT p.decl, d.sample, d.type, d.paper_side, d.lean_side, d.description, d.lean_lines
-                          FROM extract_deltas d JOIN extract_pairs p ON p.pair_id = d.pair_id
-                          WHERE p.item = '(10.19) in proof of Lemma 10.5'""").fetchall()
-    if not rows:
-        print("(10.19): no extraction yet")
-        return False
-    first = re.compile(r"A_R|A\s*/\s*R|A_?R\s*/|1\s*/\s*R\s*\^?\s*2|R\^\{?-2|R\s*\^\s*2|first term|\(B_R\s*\+\s*1\)|"
-                       r"B\s*\^\s*\(?1\s*/\s*2\)?\s*\+\s*1", re.I)
-    hits = [r for r in rows if r[2] in ("stronger-bound", "weaker-bound", "different-norm", "other")
-            and first.search(" ".join(map(str, r[3:6])))]
-    print(f"(10.19): {len(rows)} deltas; {len(hits)} bound-type deltas mention the first term")
-    for decl in sorted({r[0] for r in hits}):
-        print(f"  {decl}: samples {sorted({r[1] for r in hits if r[0] == decl})}")
-        for r in [h for h in hits if h[0] == decl][:3]:
-            print(f"    [{r[2]}] lines {r[6]}: {r[5]}")
-    return bool(hits)
+    """Check the validation targets in audit.toml ([[validation]]): for each, did any sample report a
+    difference whose wording matches every pattern (and, if given, one of the allowed types)?"""
+    ok = True
+    if not C.VALIDATION:
+        print("no validation targets configured")
+        return True
+    for v, pats, types in C.validation_patterns():
+        rows = con.execute("""SELECT p.decl, d.sample, d.type, d.paper_side, d.lean_side, d.description, d.lean_lines
+                              FROM extract_deltas d JOIN extract_pairs p ON p.pair_id = d.pair_id
+                              WHERE p.item = ?""", (v["item"],)).fetchall()
+        print(v.get("label", v["item"]))
+        if not rows:
+            print(f"  {v['item']}: no extraction yet")
+            ok = False
+            continue
+        hits = [r for r in rows if (not types or r[2] in types)
+                and all(p.search(" ".join(map(str, r[3:6]))) for p in pats)]
+        print(f"  {v['item']}: {len(rows)} deltas over all its pairs; {len(hits)} match")
+        for decl in sorted({r[0] for r in hits}):
+            print(f"    {decl}: samples {sorted({r[1] for r in hits if r[0] == decl})} of 0-2")
+            for r in [h for h in hits if h[0] == decl][:3]:
+                print(f"      [{r[2]}] lines {r[6]}: {r[5]}")
+        ok = ok and bool(hits)
+    return ok
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--section", default="8")
+    ap.add_argument("--section", default=C.PILOT_SECTION)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--validate", action="store_true")
     ap.add_argument("--steps", action="store_true", help="extract proof-step targets instead of paper results")

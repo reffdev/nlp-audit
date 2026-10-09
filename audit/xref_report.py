@@ -9,13 +9,15 @@ Per item, over the 3 independent samples of the declaration stage (no verdicts i
 File level (all items), over the catalog-pass samples: strong = some file chosen by all 3 samples with
 >= 1 verified shared term; moderate = by 2; weak = by 1; none.
 Writes table xref_coverage and prints both distributions. Declaration-level numbers are split into the
-random sample (the paper-wide estimate), Section 8 (the pilot) and the anchors (data/phase2_sample.json).
+random sample (the paper-wide estimate), the pilot section and the anchors (data/phase2_sample.json).
 """
 import json
 import sqlite3
 import sys
 from collections import Counter
 from pathlib import Path
+
+import config as C
 
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "audit.db"
@@ -71,11 +73,11 @@ def main(model_like="%thinking=1"):
     con.executemany("INSERT INTO xref_file_coverage VALUES (?,?)", list(flev.items()))
     con.commit()
 
-    plan_path = ROOT / "data" / "phase2_sample.json"
+    plan_path = C.PLAN
     if plan_path.exists():
         plan = json.loads(plan_path.read_text())
         groups = {"random sample": set(plan["random_sample"]),
-                  "section 8": set(plan["section8"]) - set(plan["anchors"]),
+                  "pilot": set(plan["pilot"]) - set(plan["anchors"]),
                   "anchors": set(plan["anchors"])}
         print("DECLARATION LEVEL:")
         for g, members in groups.items():

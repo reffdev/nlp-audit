@@ -21,10 +21,11 @@ from pathlib import Path
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import config as C
 import llm
 
 ROOT = Path(__file__).resolve().parent.parent
-DB = ROOT / "data" / "audit.db"
+DB = C.DB
 SAMPLES = 3
 ITEM_WORKERS = 5         # items in flight; total requests are capped by llm.AUDIT_LLM_MAX_CONCURRENCY
 DOC_CHARS = 280          # module-doc excerpt per file in the catalog
@@ -118,7 +119,7 @@ def catalog(con):
         fid = f"F{k}"
         ids[fid] = (f, doc or "")
         d = re.sub(r"^#+\s*", "", re.sub(r"\s+", " ", doc or "")).strip()[:DOC_CHARS]
-        lines.append(f"{fid} | {f.removeprefix('NavierStokes/')} | {d}")
+        lines.append(f"{fid} | {C.rel(f)} | {d}")
     return ids, "\n".join(lines)
 
 
@@ -208,9 +209,9 @@ def stage_files(con, items, dry, neighbour_pass=False, robust_pool=False):
         for k, f in enumerate(cand):
             d = re.sub(r"^#+\s*", "", re.sub(r"\s+", " ", docs.get(f) or "")).strip()[:NEIGHBOUR_DOC_CHARS]
             nids[f"N{k}"] = (f, docs.get(f) or "")
-            lines.append(f"N{k} | {f.removeprefix('NavierStokes/')} | {d}")
+            lines.append(f"N{k} | {C.rel(f)} | {d}")
         pb = paper_block(it)
-        chosen_txt = "\n".join(sorted(f.removeprefix("NavierStokes/") for f in chosen))
+        chosen_txt = "\n".join(sorted(C.rel(f) for f in chosen))
         prompt = (f"FILES ALREADY IDENTIFIED for this paper item:\n{chosen_txt}\n\n"
                   f"FILES THAT IMPORT OR ARE IMPORTED BY THEM ({len(cand)}):\n" + "\n".join(lines) + "\n\n" +
                   NEIGHBOURS_TASK + "\n\n" + pb)
@@ -248,7 +249,7 @@ def stage_decls(con, items, dry, neighbour_pass=False, robust_pool=False):
         chunks, cur, size = [], [], 0
         for row in rows:
             name, kind, f, a_, b_, doc, stmt, _ = row
-            line = (f"{kind} {name} | {f.removeprefix('NavierStokes/')}:{a_}-{b_} | "
+            line = (f"{kind} {name} | {C.rel(f)}:{a_}-{b_} | "
                     f"{re.sub(r'\s+', ' ', doc or '')[:300]} | {re.sub(r'\s+', ' ', stmt or '')[:DECL_STMT_CHARS]}")
             t = llm.approx_tokens(line)
             if cur and size + t > DECL_CHUNK_TOKENS:

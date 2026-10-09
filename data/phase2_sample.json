@@ -1,6 +1,6 @@
 {
  "seed": 20261007,
- "section8": [
+ "pilot": [
   "Proposition 8.1",
   "Lemma 8.2",
   "Proposition 8.3",
@@ -28,5 +28,5 @@
   "Lemma 8.6",
   "Lemma 10.5"
  ],
- "note": "Anchors are excluded from the decl-level coverage estimate; Lemma 8.6 is also a Section 8 item."
+ "note": "pilot = the pilot section's results; anchors = results added because of published discrepancies (excluded from the decl-level coverage estimate; Lemma 8.6 is also a pilot item); random_sample = seeded random sample for the whole-paper locating estimate."
 }

@@ -23,7 +23,7 @@ Tables: search_files, search_decls (every sample's candidates, per round), searc
 item x round: what was offered, excluded, hinted, examined, and the outcome), search_status (one row
 per item: rounds tried and final status).
 
-  python audit/xref_search.py --group pilot      # Section 8 + anchors
+  python audit/xref_search.py --group pilot      # pilot section + anchors (data/phase2_sample.json)
   python audit/xref_search.py --group random     # the 12 random items
   python audit/xref_search.py --group pilot --dry-run
 """
@@ -36,12 +36,13 @@ from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
+import config as C
 import llm
 import xref_llm as X
 
 ROOT = Path(__file__).resolve().parent.parent
-DB = ROOT / "data" / "audit.db"
-PLAN = ROOT / "data" / "phase2_sample.json"
+DB = C.DB
+PLAN = C.PLAN
 MAX_ROUNDS = 3
 MAX_HINTS = 25
 JOB_WORKERS = 5          # chunks in flight (x 3 samples); total requests capped by llm's semaphore
@@ -106,7 +107,7 @@ def decl_jobs(con, it, rnd, files, votes):
     keep.sort(key=lambda r: (-votes.get(r[2], 0), r[2], r[3]))
     chunks, cur, size = [], [], 0
     for r in keep:
-        line = (f"{r[1]} {r[0]} | {r[2].removeprefix('NavierStokes/')}:{r[3]}-{r[4]} | "
+        line = (f"{r[1]} {r[0]} | {C.rel(r[2])}:{r[3]}-{r[4]} | "
                 f"{re.sub(r'\s+', ' ', r[5] or '')[:300]} | {re.sub(r'\s+', ' ', r[6] or '')[:X.DECL_STMT_CHARS]}")
         t = llm.approx_tokens(line)
         if cur and size + t > X.DECL_CHUNK_TOKENS:
@@ -159,7 +160,7 @@ def run_file_round(con, items, rnd, ids, cat_lines, hints, examined):
     for it in items:
         lab = it["label"]
         ex = examined[lab]
-        hint_lines = [f"{path_to_id[f]} | {f.removeprefix('NavierStokes/')} | HINT: {why}"
+        hint_lines = [f"{path_to_id[f]} | {C.rel(f)} | HINT: {why}"
                       for f, why in hints[lab] if f in path_to_id]
         cat = [ln for fid, ln in cat_lines if ids[fid][0] not in ex]
         prompt = (f"HINT FILES ({len(hint_lines)}):\n" + "\n".join(hint_lines) +
@@ -203,13 +204,14 @@ def classify(f):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--group", choices=["pilot", "random", "sample", "rest", "all"], required=True)
+    ap.add_argument("--group", choices=["pilot", "random", "sample", "rest", "all"])
+    ap.add_argument("--items", default="", help="comma-separated item labels to search (instead of --group)")
     ap.add_argument("--resume", action="store_true",
                     help="continue items that already have search rounds instead of restarting them")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
     plan = json.loads(PLAN.read_text())
-    sample = plan["section8"] + plan["anchors"] + plan["random_sample"]
+    sample = plan["pilot"] + plan["anchors"] + plan["random_sample"]
 
     con = sqlite3.connect(DB)
     for item, label, latex in con.execute("SELECT in_item, label, latex FROM paper_equations "
@@ -219,8 +221,13 @@ def main():
     all_items = X.load_items(con, set())
     order = [it["label"] for it in all_items]
     by_label = {it["label"]: it for it in all_items}
-    labels = {"pilot": plan["section8"] + plan["anchors"], "random": plan["random_sample"], "sample": sample,
-              "rest": [lab for lab in order if lab not in sample], "all": order}[a.group]
+    if a.items:
+        labels = [x.strip() for x in a.items.split(",") if x.strip()]
+    elif a.group:
+        labels = {"pilot": plan["pilot"] + plan["anchors"], "random": plan["random_sample"], "sample": sample,
+                  "rest": [lab for lab in order if lab not in sample], "all": order}[a.group]
+    else:
+        ap.error("--group or --items is required")
     labels = list(dict.fromkeys(labels))
     items = [by_label[lab] for lab in labels]
     setup(con)
@@ -348,7 +355,7 @@ def main():
     cat_lines = []
     for fid, (f, doc) in ids.items():
         d = re.sub(r"^#+\s*", "", re.sub(r"\s+", " ", doc or "")).strip()[:X.DOC_CHARS]
-        cat_lines.append((fid, f"{fid} | {f.removeprefix('NavierStokes/')} | {d}"))
+        cat_lines.append((fid, f"{fid} | {C.rel(f)} | {d}"))
     for rnd in range(2, MAX_ROUNDS + 1):
         todo = [it for it in items if last_round.get(it["label"]) == rnd - 1 and not is_strong(it["label"])]
         if not todo:
@@ -365,7 +372,7 @@ def main():
             for f in agreed_catalog_files(lab):
                 for g in nb[f]:
                     score[g] += 1
-                    why[g].append(f"imports/imported by {f.removeprefix('NavierStokes/')}")
+                    why[g].append(f"imports/imported by {C.rel(f)}")
             ranked = [f for f, _ in score.most_common() if f not in examined[lab]][:MAX_HINTS]
             hints[lab] = [(f, "; ".join(dict.fromkeys(why[f]))[:300]) for f in ranked]
         started = time.strftime("%Y-%m-%d %H:%M:%S")

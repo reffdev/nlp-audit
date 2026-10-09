@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Phase 0: structured index of the Navier-Stokes paper.
+"""Phase 0: structured index of the paper.
 
 Reads `pdftotext -enc UTF-8 -layout` output (pages separated by form feeds) and
 records every numbered Lemma/Proposition/Theorem/Corollary/Definition/Remark and
-every numbered displayed equation, with section, page, statement and proof text.
+every numbered displayed equation, with section, page, statement and proof text. Running heads,
+printed-page patterns and result kinds come from audit.toml. Assumed layout: a table of contents
+before the body, section headers that repeat the contents line, and a final "References" line.
 Also records every in-text reference to an item or equation (for downstream-use counts).
 
 Output: SQLite tables paper_sections, paper_items, paper_equations, paper_refs
@@ -15,12 +17,14 @@ import sqlite3
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-TXT = ROOT / "data" / "paper_layout.txt"
-DB = ROOT / "data" / "audit.db"
+import config as C
 
-KINDS = "Lemma|Proposition|Theorem|Corollary|Definition|Remark"
-NUM = r"(?:\d+|[A-C])\.\d+"
+ROOT = Path(__file__).resolve().parent.parent
+TXT = C.LAYOUT_TXT
+DB = C.DB
+
+KINDS = C.KINDS
+NUM = C.NUM
 ITEM_HDR = re.compile(rf"^\s{{0,4}}({KINDS})\s+({NUM})(\s*\([^)]*\)?)?\.\s")
 SUBSEC_HDR = re.compile(r"^\s{0,4}((?:\d+|[A-C])\.\d+)\.\s+(\S.*?)\.(\s|$)")
 # Equation label at the right margin: whitespace, then (8.19), nothing after. Labels are sometimes
@@ -48,7 +52,6 @@ PROOF_START = re.compile(r"^\s{0,4}Proof\b[^.]*\.")
 QED = "□"
 REF = re.compile(
     rf"\b({KINDS}|Equations?|Eq\.)\s+({NUM})(\([ivx]+\))?|\(({NUM})\)")
-RUNNING_HEAD = re.compile(r"^\s*(\d+\s+OPENAI|FINITE TIME BLOWUP FOR NAVIER–STOKES\s+\d+)\s*$")
 
 
 def load_lines():
@@ -58,10 +61,8 @@ def load_lines():
     for pi, page in enumerate(pages, start=1):
         printed = None
         for ln in page.splitlines()[:3] + page.splitlines()[-3:]:
-            m = re.match(r"^\s*(\d+)\s+OPENAI\s*$", ln) or re.match(
-                r"^\s*FINITE TIME BLOWUP FOR NAVIER–STOKES\s+(\d+)\s*$", ln) or re.match(r"^\s+(\d+)\s*$", ln)
-            if m:
-                printed = int(m.group(1))
+            printed = C.printed_page(ln)
+            if printed is not None:
                 break
         for ln in page.splitlines():
             lines.append((pi, printed, ln))
@@ -72,7 +73,7 @@ def clean(block):
     """Join lines, drop running heads and bare page numbers, collapse blank runs."""
     out = []
     for _, _, ln in block:
-        if RUNNING_HEAD.match(ln) or re.match(r"^\s+\d+\s*$", ln):
+        if C.running_head(ln) or re.match(r"^\s+\d+\s*$", ln):
             continue
         out.append(ln.rstrip())
     txt = "\n".join(out)
@@ -134,7 +135,7 @@ def main():
         if num.split(".")[0] != sec:
             continue  # a reference to an item from another section that wrapped to line start
         prev = next((lines[j][2] for j in range(i - 1, toc_end, -1)
-                     if not RUNNING_HEAD.match(lines[j][2])), "")
+                     if not C.running_head(lines[j][2])), "")
         if prev.strip() and lines[i - 1][0] == lines[i][0]:
             continue  # real headers start a paragraph; this is prose that wrapped onto "Lemma X.Y."
         if num in seen:

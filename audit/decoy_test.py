@@ -31,7 +31,7 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
     plan = json.loads(S.PLAN.read_text())
-    labels = list(dict.fromkeys(plan["section8"] + plan["anchors"] + plan["random_sample"]))
+    labels = list(dict.fromkeys(plan["pilot"] + plan["anchors"] + plan["random_sample"]))
     con = sqlite3.connect(DB)
     for item, label, latex in con.execute("SELECT in_item, label, latex FROM paper_equations "
                                           "WHERE in_part='proof' ORDER BY line"):

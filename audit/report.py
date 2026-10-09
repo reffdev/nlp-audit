@@ -7,6 +7,7 @@ cites Lean lines, when they cite the same paper location. Each group keeps its a
 the 3 samples reported it) and every sample's wording. Nothing here judges whether a difference matters.
 
 Outputs (out/):
+  paper_lean_map.csv                       one row per located target: paper result or proof step -> Lean declaration
   audit_table.csv                          one row per (paper item, Lean declaration) pair
   differences.csv                          one row per grouped difference
   paper_items_not_matched.csv              paper items without a confident Lean counterpart (all sections)
@@ -23,14 +24,14 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+import config as C  # noqa: E402
 from xref_search import trivial  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-DB = ROOT / "data" / "audit.db"
-OUT = ROOT / "out"
-SECTION = "8"
-REPO_URL = "https://github.com/openai/NavierStokesAndEuler/blob"
-PAPER_URL = "https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf"
+DB = C.DB
+OUT = C.OUT
+REPO_URL = C.REPO_BLOB_URL
+PAPER_URL = C.PAPER["url"]
 SEVERITY = ["stronger-bound", "missing-hypothesis", "different-norm", "missing-supremum", "different-domain",
             "extra-hypothesis", "weaker-bound", "other"]
 RANK = {t: i for i, t in enumerate(SEVERITY)}
@@ -43,7 +44,8 @@ def lines_of(s):
 
 def group_deltas(rows):
     """rows: dicts of one pair & type. Union deltas from different samples that cite overlapping Lean lines
-    (or, without Lean lines, the same paper citation)."""
+    (or, without Lean lines, the same paper citation). Overlap means sharing at least one line; adjacent
+    lines are not merged, since a statement's hypotheses and conclusion sit on consecutive lines."""
     parent = list(range(len(rows)))
 
     def find(i):
@@ -56,7 +58,7 @@ def group_deltas(rows):
         for j in range(i + 1, len(rows)):
             b = rows[j]
             la, lb = lines_of(a["lean_lines"]), lines_of(b["lean_lines"])
-            same = (la and lb and la[0] <= lb[1] + 1 and lb[0] <= la[1] + 1) or \
+            same = (la and lb and la[0] <= lb[1] and lb[0] <= la[1]) or \
                    (not la and not lb and (a["paper_cite"] or "").strip() == (b["paper_cite"] or "").strip())
             if same:
                 parent[find(i)] = find(j)
@@ -70,8 +72,7 @@ def main():
     OUT.mkdir(exist_ok=True)
     con = sqlite3.connect(DB)
     con.row_factory = sqlite3.Row
-    repo_commit = (ROOT / "repo" / ".git").exists() and __import__("subprocess").run(
-        ["git", "-C", str(ROOT / "repo"), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    repo_commit = C.repo_commit()
     items = {r["label"]: dict(r) for r in con.execute("SELECT * FROM paper_items")}
     if con.execute("SELECT name FROM sqlite_master WHERE name='paper_steps'").fetchone():
         items.update({r["label"]: dict(r) for r in con.execute("SELECT * FROM paper_steps")})
@@ -126,6 +127,23 @@ def main():
             downstream_uses=downstream[p["item"]], samples_valid=p["samples_ok"]))
     table.sort(key=lambda r: (r["top_severity"], -r["top_agreement"], r["item"]))
 
+    # ---- paper -> Lean map (every located target, whole paper) ----
+    decl_loc = {r[0]: f"{r[1]}:{r[2]}-{r[3]}" for r in con.execute(
+        "SELECT name, file, line_start, line_end FROM lean_decls")}
+    lean_map = []
+    for r in con.execute("SELECT * FROM search_status"):
+        it = items.get(r["item"], {})
+        others = [c["decl"] for c in json.loads(r["found_all"] or "[]") if c["decl"] != r["found_decl"]]
+        lean_map.append(dict(
+            item=r["item"], kind=r["kind"], section=r["section"], page=it.get("printed_page"),
+            status=r["status"], lean_decl=r["found_decl"] or "",
+            lean_location=decl_loc.get(r["found_decl"], r["found_file"] or ""),
+            agreement=r["found_agreement"] or 0, found_round=r["found_round"] or "",
+            rounds_tried=r["rounds_tried"], files_examined=r["files_examined_total"],
+            other_agreed_decls="; ".join(others)))
+    order = {lab: i for i, lab in enumerate(items)}
+    lean_map.sort(key=lambda m: order.get(m["item"], 10**6))
+
     # ---- unmatched paper items (whole paper) ----
     unmatched = [dict(item=r["item"], section=r["section"], rounds_tried=r["rounds_tried"], status=r["status"],
                       best_candidate=r["found_decl"] or "", candidate_agreement=r["found_agreement"] or 0)
@@ -160,26 +178,27 @@ def main():
     write_csv("differences.csv", diffs, ["item", "decl", "type", "agreement", "summary", "paper_side", "lean_side",
                                          "paper_cite", "page", "paper_quote", "paper_quote_verified", "lean_file",
                                          "lean_lines", "lean_quote", "lean_quote_verified", "verdict_words", "all_wordings"])
+    write_csv("paper_lean_map.csv", lean_map, ["item", "kind", "section", "page", "status", "lean_decl", "lean_location",
+                                              "agreement", "found_round", "rounds_tried", "files_examined",
+                                              "other_agreed_decls"])
     write_csv("paper_items_not_matched.csv", unmatched, ["item", "section", "rounds_tried", "status", "best_candidate",
                                                           "candidate_agreement"])
     write_csv("lean_theorems_without_paper_counterpart.csv", orphans,
               ["lean_decl", "location", "used_by_other_files", "on_main_proof_path", "docstring"])
 
     # ---- HTML ----
-    gate = [d for d in diffs if d["item"] == "Lemma 8.6" and d["type"] == "stronger-bound"
-            and re.search(r"four|\b4\b|\+\s*4", " ".join(d["all_wordings"]), re.I)
-            and re.search(r"five|\b5\b|\+\s*5", " ".join(d["all_wordings"]), re.I)]
-    first_term = re.compile(r"A_R|A\s*/\s*R|1\s*/\s*R\s*\^?\s*2|R\^\{?-2|first term|\(B_R\s*\+\s*1\)", re.I)
-    gate += [d for d in diffs if d["item"] == "(10.19) in proof of Lemma 10.5"
-             and d["type"] in ("stronger-bound", "weaker-bound", "different-norm", "other")
-             and first_term.search(" ".join(d["all_wordings"]))]
+    gate = []  # differences that reproduce the validation targets in audit.toml
+    for v, pats, types in C.validation_patterns():
+        gate += [d for d in diffs if d["item"] == v["item"] and (not types or d["type"] in types)
+                 and all(p.search(" ".join(d["all_wordings"])) for p in pats)]
     write_html(table, diffs, unmatched, orphans, gate, repo_commit, downstream_where, items, pilot_files)
     write_shortlist(diffs, gate, repo_commit, items)
     print(f"pairs={len(table)} differences={len(diffs)} (3/3: {sum(d['agreement'] == 3 for d in diffs)}) "
           f"unmatched_items={len(unmatched)} orphan_theorems={len(orphans)} -> {OUT}")
 
 
-SHORTLIST_TYPES = ("stronger-bound", "weaker-bound", "different-norm", "missing-supremum")
+SHORTLIST_TYPES = ("stronger-bound", "weaker-bound", "missing-supremum")
+SHORTLIST_TIER_B = ("different-norm",)
 
 
 def write_shortlist(diffs, gate, commit, items):
@@ -191,25 +210,46 @@ def write_shortlist(diffs, gate, commit, items):
         if g not in picked:
             picked.append(g)
     picked.sort(key=lambda d: (d["severity"], d["item"], d["decl"]))
+    tier_b = [d for d in diffs if d["agreement"] == 3 and d["type"] in SHORTLIST_TIER_B and d not in picked]
+    tier_b.sort(key=lambda d: (d["item"], d["decl"]))
+    gate_ids = {id(g) for g in gate}
     out = ["# Review shortlist", "",
            "Differences between the paper and the Lean formalization that may deserve an expert's attention, "
-           "selected mechanically: reported by all 3 independent samples and concerning what is estimated "
-           "(bound, norm, or uniformity), plus the hits on the two published discrepancies. **Nothing here has "
-           "been reviewed by a mathematician; each entry is a difference in wording, not a claimed error.** "
-           "Full data: `out/differences.csv`; method: `METHODOLOGY.md`.", ""]
-    for k, d in enumerate(picked, start=1):
+           "selected mechanically. **Nothing here has been reviewed by a mathematician; each entry is a "
+           "difference in wording, not a claimed error.** Full data: `out/differences.csv`; method: `METHODOLOGY.md`.", "",
+           *([C.REPORT["target_note"], ""] if C.REPORT.get("target_note") else []),
+           "## Part A: differences in what is estimated", "",
+           "Reported by all 3 samples, of type stronger-bound, weaker-bound or missing-supremum"
+           + (", plus the entries that reproduce the configured validation targets (marked **validation**)." if gate else ".")
+           , ""]
+
+    def entry(k, d):
         ln = lines_of(d["lean_lines"])
         url = (f"{REPO_URL}/{commit}/{d['lean_file']}#L{ln[0]}" + (f"-L{ln[1]}" if ln and ln[1] != ln[0] else "")
                if ln else f"{REPO_URL}/{commit}/{d['lean_file']}")
-        out += [f"## {k}. {d['item']} · `{d['decl'].split('.', 1)[-1]}`", "",
+        tag = " · **validation**" if id(d) in gate_ids else ""
+        return [f"## {k}. {d['item']} · `{d['decl'].split('.', 1)[-1]}`{tag}", "",
                 f"- **Type:** {d['type']} · reported by {d['agreement']}/3 samples",
                 f"- **Difference:** {d['summary']}",
                 f"- **Paper** ([p.{d['page']}]({PAPER_URL}#page={d['page']}), {d['paper_cite']}): {d['paper_side']}",
                 f"  - quote{'' if d['paper_quote_verified'] else ' (not verified)'}: `{d['paper_quote']}`",
-                f"- **Lean** ([{d['lean_file'].removeprefix('NavierStokes/')}:{d['lean_lines']}]({url})): {d['lean_side']}",
+                f"- **Lean** ([{d['lean_file'].removeprefix(C.PREFIX)}:{d['lean_lines']}]({url})): {d['lean_side']}",
                 f"  - quote{'' if d['lean_quote_verified'] else ' (not verified)'}: `{d['lean_quote']}`", ""]
+
+    k = 0
+    for d in picked:
+        k += 1
+        out += entry(k, d)
+    out += ["## Part B: differences in how size is measured", "",
+            "Reported by all 3 samples, of type different-norm. Most of these are the Lean encoding a norm or "
+            "function class under another name (for example a C^m norm as a bound on iterated derivatives). "
+            "They are listed because the mechanical rule "
+            "selects them, not because any has been judged substantive.", ""]
+    for d in tier_b:
+        k += 1
+        out += entry(k, d)
     (OUT / "review_shortlist.md").write_text("\n".join(out), encoding="utf-8")
-    print(f"review shortlist: {len(picked)} entries")
+    print(f"review shortlist: {len(picked)} entries in part A, {len(tier_b)} in part B")
 
 
 def esc(s):
@@ -221,7 +261,7 @@ def lean_link(commit, file, lines):
     if not ln:
         return esc(file)
     anchor = f"#L{ln[0]}" + (f"-L{ln[1]}" if ln[1] != ln[0] else "")
-    return f'<a href="{REPO_URL}/{commit}/{esc(file)}{anchor}">{esc(file.removeprefix("NavierStokes/"))}:{esc(lines)}</a>'
+    return f'<a href="{REPO_URL}/{commit}/{esc(file)}{anchor}">{esc(file.removeprefix(C.PREFIX))}:{esc(lines)}</a>'
 
 
 def paper_link(page, label):
@@ -265,6 +305,9 @@ def write_html(table, diffs, unmatched, orphans, gate, commit, downstream_where,
             f'<tbody>{"".join(det)}</tbody></table></details></td></tr></tbody>')
     gate_html = "".join(f"<li>{esc(d['item'])}: <code>{esc(d['decl'].split('.', 1)[-1])}</code>, {d['agreement']}/3 samples, "
                         f"{lean_link(commit, d['lean_file'], d['lean_lines'])}: {esc(d['summary'])}</li>" for d in gate)
+    gate_card = (f'<div class="card gate">{C.REPORT.get("validation_intro", "<b>Validation targets</b>")}'
+                 f'<ul>{gate_html or "<li>not found</li>"}</ul></div>') if C.VALIDATION else ""
+    pilot_label = C.REPORT.get("pilot_label", "pilot")
     un_html = "".join(f"<tr><td>{esc(u['item'])}</td><td>{esc(u['status'])}</td><td>{u['rounds_tried']}</td>"
                       f"<td><code>{esc(u['best_candidate'])}</code> ({u['candidate_agreement']}/3)</td></tr>" for u in unmatched)
     orph_html = "".join(f"<tr><td><code>{esc(o['lean_decl'].split('.', 1)[-1])}</code></td>"
@@ -274,7 +317,7 @@ def write_html(table, diffs, unmatched, orphans, gate, commit, downstream_where,
                         for t in SEVERITY if types[t])
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Navier–Stokes Lean Audit</title>
+<title>{esc(C.REPORT.get('short_title', 'Paper vs. Lean audit'))}</title>
 <style>
 :root {{ --bg:#fbfbf9; --fg:#1d1d1b; --muted:#6b6b66; --line:#e3e2dc; --card:#ffffff; --accent:#2f5d8a;
   --sb:#b42318; --mh:#b54708; --nm:#6941c6; --oth:#667085; --ok:#067647; }}
@@ -306,15 +349,12 @@ details summary {{ cursor:pointer; color:var(--accent); font-size:13px; }}
 .warn {{ color:var(--mh); }}
 .filters label {{ margin-right:14px; font-size:13px; white-space:nowrap; }}
 </style></head><body><main>
-<h1>Navier–Stokes paper vs. Lean: Section 8 and Lemma 10.5 audit</h1>
+<h1>{esc(C.REPORT.get('title', 'Paper vs. Lean audit'))}</h1>
 <p class="lead">Where the paper and its Lean formalization state things differently, extracted by a local model
 (3 independent samples per pair, kept separate) with every claim quoted and the quotes checked against the sources.
 This page lists differences. It does not say whether any difference matters. See METHODOLOGY.md.
-Paper: <a href="{PAPER_URL}">navier-stokes.pdf</a> · Lean: openai/NavierStokesAndEuler at <code>{esc(commit[:12])}</code></p>
-<div class="card gate"><b>Validation against the two published discrepancies</b> (Bastounis, Circelli &amp; Hansen,
-<a href="https://arxiv.org/abs/2610.08144">arXiv:2610.08144</a>), reported without any prompt mentioning them:
-Lemma 8.6 (the paper loses m+4 derivatives, the Lean m+5) and eq. (10.19) inside the proof of Lemma 10.5 (the
-pressure-flux bound).<ul>{gate_html or "<li>not found</li>"}</ul></div>
+Paper: <a href="{PAPER_URL}">{esc(C.PDF.name)}</a> · Lean: {esc(C.REPO_LABEL)} at <code>{esc(commit[:12])}</code></p>
+{gate_card}
 
 <h2>Pairs (paper item × Lean declaration), most severe first</h2>
 <p class="lead">Severity order: {", ".join(SEVERITY)}. "Agreed" = reported by all 3 samples at the same Lean lines.
@@ -331,8 +371,8 @@ Downstream uses = places the paper cites the item (hover for the list).</p>
 <div class="wrap"><table><thead><tr><th>Item</th><th>Status</th><th>Rounds</th><th>Best candidate</th></tr></thead>
 <tbody>{un_html or "<tr><td colspan=4>none</td></tr>"}</tbody></table></div>
 
-<h2>Lean theorems in the Section 8 files not located for any paper item</h2>
-<p class="lead">{len(orphans)} theorems in the {len(pilot_files)} files of the Section 8 pairs, excluding routine helpers
+<h2>Lean theorems in the {esc(pilot_label)} files not located for any paper item</h2>
+<p class="lead">{len(orphans)} theorems in the {len(pilot_files)} files of the {esc(pilot_label)} pairs, excluding routine helpers
 (simp lemmas, private, undocumented smoothness/arithmetic one-liners). Most are supporting steps; sorted by how many
 other files use them.</p>
 <details><summary>show {len(orphans)} theorems</summary><div class="wrap"><table>

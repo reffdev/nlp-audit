@@ -1,0 +1,66 @@
+# Target of the audit: one paper and one Lean formalization.
+#
+# Everything paper- or repository-specific lives in this file; the scripts in audit/ read it through
+# audit/config.py and contain no other knowledge of the target. To audit another paper, copy this file,
+# change the values, and point AUDIT_CONFIG at the copy (default: audit.toml in the repository root).
+# Regular expressions are TOML literal strings ('...'), so backslashes are written once.
+
+[paper]
+title = "Finite time blowup for Navier–Stokes"
+url = "https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf"
+sha256 = "0e779481c4da40bd28d1e642e1d8ca57447d129610df28dfa5a11e9af8ae228f"
+# Local copy. The text layer goes to data/paper_layout.txt, page images to data/pages/, and the OCR
+# output (Marker, JSON format) is expected at data/ocr/<stem>/<stem>.json.
+file = "data/navier-stokes.pdf"
+# Running heads (dropped from statements) and the patterns that give the printed page number on a page.
+running_heads = ['^\s*\d+\s+OPENAI\s*$', '^\s*FINITE TIME BLOWUP FOR NAVIER–STOKES\s+\d+\s*$']
+printed_page = ['^\s*(\d+)\s+OPENAI\s*$', '^\s*FINITE TIME BLOWUP FOR NAVIER–STOKES\s+(\d+)\s*$', '^\s+(\d+)\s*$']
+# Numbered result kinds, and the shape of result and equation numbers ("8.19", "A.5").
+kinds = ["Lemma", "Proposition", "Theorem", "Corollary", "Definition", "Remark"]
+number = '(?:\d+|[A-C])\.\d+'
+
+[lean]
+repo_url = "https://github.com/openai/NavierStokesAndEuler"
+commit = "f9e8bc5b38b6e212696e8a30e3e91517af887bbd"
+# Only this directory of the repository is indexed; paths shown to the model are relative to it.
+subdir = "NavierStokes"
+# Name suffixes of the top-level theorems. Declarations reachable from them form the "main proof path".
+main_theorems = ["navier_stokes_breakdown_R3", "navier_stokes_breakdown_periodic"]
+
+[plan]
+# Which paper results to locate and extract first: lists "pilot", "anchors" and "random_sample".
+file = "data/phase2_sample.json"
+pilot_section = "8"
+
+[report]
+title = "Navier–Stokes paper vs. Lean: Section 8 and Lemma 10.5 audit"
+short_title = "Navier–Stokes Lean Audit"
+pilot_label = "Section 8"
+# Shown at the top of the review shortlist (Markdown). Say how the targets were chosen.
+target_note = """**How the targets were chosen.** Section 8 was the pilot section. Lemma 8.6 and Lemma 10.5 were added \
+because Bastounis, Circelli and Hansen (arXiv:2610.08144) had published discrepancies in them, and \
+proof-level targets were run only inside the proofs of Lemmas 8.2, 8.6 and 10.5. The model prompts \
+never mention those discrepancies; the choice of what to examine does reflect them."""
+# Shown above the validation entries in report.html (HTML).
+validation_intro = """<b>Validation against the two published discrepancies</b> (Bastounis, Circelli &amp; Hansen, \
+<a href="https://arxiv.org/abs/2610.08144">arXiv:2610.08144</a>): \
+Lemma 8.6 (the paper loses m+4 derivatives, the Lean m+5) and eq. (10.19) inside the proof of Lemma 10.5 (the \
+pressure-flux bound has a different first term). Lemma 8.6 and Lemma 10.5 were put on the target list because of \
+that paper; no prompt mentions the discrepancies, the lemma, derivative counts or the bound."""
+
+# Validation targets: differences known in advance that the extraction should report. Each entry names a
+# paper item, optionally restricts the difference types, and lists patterns that must all match the
+# wording of a reported difference. Matching entries are marked "validation" in the shortlist and report,
+# and `python audit/extract.py --validate` checks them. Delete these entries for a paper with no known
+# discrepancies.
+[[validation]]
+label = "Lemma 8.6: the paper loses m+4 derivatives, the Lean m+5"
+item = "Lemma 8.6"
+types = ["stronger-bound"]
+patterns = ['four|\b4\b|\+\s*4', 'five|\b5\b|\+\s*5']
+
+[[validation]]
+label = "(10.19) in the proof of Lemma 10.5: the first term of the pressure-flux bound has a different form"
+item = "(10.19) in proof of Lemma 10.5"
+types = ["stronger-bound", "weaker-bound", "different-norm", "other"]
+patterns = ['A_R|A\s*/\s*R|1\s*/\s*R\s*\^?\s*2|R\^\{?-2|first term|\(B_R\s*\+\s*1\)']

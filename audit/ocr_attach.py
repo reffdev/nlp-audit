@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Phase 0b: attach OCR'd LaTeX to the paper index, cross-checked against the PDF text layer.
 
-Marker (data/ocr/navier-stokes/navier-stokes.json) gives layout-aware LaTeX per block, with a
+Marker (data/ocr/<stem>/<stem>.json, see audit/fetch.py --ocr) gives layout-aware LaTeX per block, with a
 bounding box in PDF points. The PDF's own text layer gives the exact typeset glyphs in that box
 but loses layout. For every block we compare the multiset of significant symbols (letters,
 digits, Greek, a few operators, hat/tilde accents) on both sides. Any difference flags the block;
@@ -24,14 +24,16 @@ from pathlib import Path
 import pdfplumber
 from pylatexenc.latex2text import LatexNodes2Text
 
+import config as C
+
 ROOT = Path(__file__).resolve().parent.parent
-DB = ROOT / "data" / "audit.db"
-OCR = ROOT / "data" / "ocr" / "navier-stokes" / "navier-stokes.json"
-PDF = ROOT / "data" / "navier-stokes.pdf"
+DB = C.DB
+OCR = C.OCR_JSON
+PDF = C.PDF
 
 SKIP = {"PageHeader", "PageFooter", "TableOfContents", "Figure", "Picture"}
 GROUPS = {"ListGroup", "TableGroup", "FigureGroup", "PictureGroup"}
-KINDS = "Lemma|Proposition|Theorem|Corollary|Definition|Remark"
+KINDS = C.KINDS
 L2T = LatexNodes2Text()
 OPS = set("∂∇∑∫∞≤≥=+−∈⊂×≠")
 ACCENTS = {"̂": "^", "ˆ": "^", "̃": "~", "˜": "~"}

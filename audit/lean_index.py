@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Phase 1: index of Lean declarations under NavierStokes/.
+"""Phase 1: index of Lean declarations under the configured subdirectory of the Lean repository.
 
 Source reading only (no elaboration). For every declaration records name (fully qualified
 by namespace), kind, file, line range, docstring, statement text (keyword through the
 top-level `:=` / `where` / first match arm), the `variable`s in scope (implicit hypotheses),
-prefix commands (`omit ... in`, `open ... in`), and the NavierStokes declarations its text
+prefix commands (`omit ... in`, `open ... in`), and the indexed declarations its text
 references. Also records each file's module docstring (`/-! ... -/`).
 
 Output: SQLite tables lean_files, lean_decls, lean_refs in data/audit.db, plus JSONL mirrors.
@@ -14,10 +14,12 @@ import re
 import sqlite3
 from pathlib import Path
 
+import config as C
+
 ROOT = Path(__file__).resolve().parent.parent
-REPO = ROOT / "repo"
-SRC = REPO / "NavierStokes"
-DB = ROOT / "data" / "audit.db"
+REPO = C.REPO
+SRC = C.SRC
+DB = C.DB
 
 KW = r"theorem|lemma|def|abbrev|structure|class|instance|inductive|example|opaque|axiom|irreducible_def"
 MODS = r"(?:(?:private|protected|noncomputable|nonrec|partial|unsafe|scoped)\s+)*"

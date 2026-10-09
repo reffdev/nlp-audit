@@ -21,6 +21,7 @@ import sqlite3
 import time
 from collections import Counter, defaultdict
 
+import config as C
 import llm  # noqa: F401  (configures the shared request limit)
 import xref_llm as X
 import xref_search as S
@@ -143,7 +144,7 @@ def main():
     cat_lines = []
     for fid, (f, doc) in ids.items():
         d = re.sub(r"^#+\s*", "", re.sub(r"\s+", " ", doc or "")).strip()[:X.DOC_CHARS]
-        cat_lines.append((fid, f"{fid} | {f.removeprefix('NavierStokes/')} | {d}"))
+        cat_lines.append((fid, f"{fid} | {C.rel(f)} | {d}"))
     for rnd in range(2, MAX_ROUNDS + 1):
         todo = [s for s in steps if last.get(s["label"]) == rnd - 1
                 and not (s["label"] in best and S.classify(best[s["label"]][1]) == "strong")]

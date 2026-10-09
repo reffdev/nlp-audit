@@ -24,13 +24,15 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 
+import config as C
+
 ROOT = Path(__file__).resolve().parent.parent
-DB = ROOT / "data" / "audit.db"
+DB = C.DB
 TOP_THM, TOP_DEF, TOP_FILES, NEIGHBOURS, POOL_MAX = 15, 10, 35, 3, 60
 W = dict(doc=0.35, name=0.25, file=0.30, title=0.10)
 EXPLICIT_BONUS = 0.15
-MAIN_SUFFIXES = ("navier_stokes_breakdown_R3", "navier_stokes_breakdown_periodic")
-LABEL = re.compile(r"\b(Lemma|Proposition|Theorem|Corollary|Definition|Remark)\s+((?:\d+|[A-C])\.\d+)")
+MAIN_SUFFIXES = C.MAIN_SUFFIXES
+LABEL = re.compile(rf"\b({C.KINDS})\s+({C.NUM})")
 STOP = set("""the and for with that this from are its any all each every which there then when where into onto
 than such some also only both over under same used uses using give gives given let our their these those one two
 theorem lemma proof def fun exact simp intro have show by obtain refine calc rfl apply rw only at hf hp""".split())
@@ -165,7 +167,7 @@ def main():
         order = list(np.argsort(-fs))
         pool = {fi: ("text", r) for r, fi in enumerate(order[:TOP_FILES], start=1)}
         for r, fi in enumerate(order[:TOP_FILES], start=1):
-            for nb in sorted(imports_nb[fnames[fi]], key=lambda f: -fs[fidx[f]])[:NEIGHBOURS]:
+            for nb in sorted(imports_nb[fnames[fi]], key=lambda f: (-fs[fidx[f]], f))[:NEIGHBOURS]:  # name breaks ties
                 if fidx[nb] not in pool and len(pool) < POOL_MAX:
                     pool[fidx[nb]] = ("import-neighbour", order.index(fidx[nb]) + 1)
         for fi, (via, rank) in pool.items():

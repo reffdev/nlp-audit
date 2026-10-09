@@ -3,7 +3,7 @@
 # runs even if one fails. Watch with:  tail -f data/overnight.log
 cd "$(dirname "$0")/.." || exit 1
 export PYTHONIOENCODING=utf-8
-PY="/c/Users/alexr/AppData/Local/Microsoft/WindowsApps/python.exe"
+PY="${PYTHON:-python}"
 "$PY" -c "import openai, pdfplumber, sklearn" || { echo "python env check failed" >> data/overnight.log; exit 1; }
 LOG=data/overnight.log
 step() { echo; echo "===== $(date '+%F %T') $1 ====="; }
