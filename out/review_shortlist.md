@@ -1,12 +1,12 @@
 # Review shortlist
 
-Differences between the paper and the Lean formalization that may deserve an expert's attention, selected mechanically. **Nothing here has been reviewed by a mathematician; each entry is a difference in wording, not a claimed error.** Full data: `out/differences.csv`; method: `METHODOLOGY.md`.
+Differences between the paper and the Lean that are probably most worth an expert's time, picked by a fixed rule rather than by judgment. **No mathematician has reviewed these yet. Each one is a place where the two say different things, not a claimed error.** All the data is in `out/differences.csv`, and the method is in `METHODOLOGY.md`.
 
-**How the targets were chosen.** Section 8 was the pilot section. Lemma 8.6 and Lemma 10.5 were added because Bastounis, Circelli and Hansen (arXiv:2610.08144) had published discrepancies in them, and proof-level targets were run only inside the proofs of Lemmas 8.2, 8.6 and 10.5. The model prompts never mention those discrepancies; the choice of what to examine does reflect them.
+**How the targets were chosen.** Section 8 was the pilot. Lemmas 8.6 and 10.5 were added because Bastounis, Circelli and Hansen (arXiv:2610.08144) had already found discrepancies there, and the proof-level targets only cover the proofs of Lemmas 8.2, 8.6 and 10.5. The prompts never mention those discrepancies, but they did decide where the tool looked.
 
 ## Part A: differences in what is estimated
 
-Reported by all 3 samples, of type stronger-bound, weaker-bound or missing-supremum, plus the entries that reproduce the configured validation targets (marked **validation**).
+Every difference that all 3 samples reported as stronger-bound, weaker-bound or missing-supremum, plus the known discrepancies used to validate the tool (marked **validation**).
 
 ## 1. (8.10) in proof of Lemma 8.2 · `SmoothFamilyTorusInverse.applyMultiplier_finiteJets`
 
@@ -82,7 +82,7 @@ Reported by all 3 samples, of type stronger-bound, weaker-bound or missing-supre
 
 ## Part B: differences in how size is measured
 
-Reported by all 3 samples, of type different-norm. Most of these are the Lean encoding a norm or function class under another name (for example a C^m norm as a bound on iterated derivatives). They are listed because the mechanical rule selects them, not because any has been judged substantive.
+Every difference that all 3 samples reported as different-norm. Most of these are the Lean writing a norm or function class another way (for example a C^m norm as a bound on iterated derivatives). They're here because the rule picks them up, not because anyone has judged them to matter.
 
 ## 9. (10.19) in proof of Lemma 10.5 · `PressureFlux.exists_uniform_actual_pressure_flux_bound`
 
