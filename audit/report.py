@@ -108,6 +108,18 @@ def main():
                     all_wordings=[f"[sample {r['sample']}] {r['description']}" for r in g]))
     diffs.sort(key=lambda d: (d["severity"], -d["agreement"], d["item"], d["decl"]))
 
+    # ---- static, source-level checks (audit/static_checks.py), if run ----
+    tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    depth = ({r[0]: (r[1], r[2]) for r in con.execute("SELECT name, def_depth, def_chain FROM lean_def_depth")}
+             if "lean_def_depth" in tables else {})
+    hatches = ({r[0]: sum(r[1:]) for r in con.execute(
+        "SELECT file, axiom, sorry, admit, native_decide, unsafe FROM static_scan")} if "static_scan" in tables else {})
+
+    def static_cols(decl, file):
+        dd = depth.get(decl)
+        return dict(def_depth=dd[0] if dd else "", def_chain=dd[1] if dd else "",
+                    file_axiom_sorry_admit_native_decide_unsafe=hatches.get(file, ""))
+
     # ---- pair table ----
     table = []
     for p in pairs:
@@ -124,7 +136,8 @@ def main():
             n_differences=len(ds), n_agreed_3of3=sum(d["agreement"] == 3 for d in ds),
             top_difference=(f"[{top['type']}, {top['agreement']}/3] {top['summary']}" if top else ""),
             top_severity=top["severity"] if top else 99, top_agreement=top["agreement"] if top else 0,
-            downstream_uses=downstream[p["item"]], samples_valid=p["samples_ok"]))
+            downstream_uses=downstream[p["item"]], samples_valid=p["samples_ok"],
+            **static_cols(p["decl"], p["decl_file"])))
     table.sort(key=lambda r: (r["top_severity"], -r["top_agreement"], r["item"]))
 
     # ---- paper -> Lean map (every located target, whole paper) ----
@@ -140,7 +153,7 @@ def main():
             lean_location=decl_loc.get(r["found_decl"], r["found_file"] or ""),
             agreement=r["found_agreement"] or 0, found_round=r["found_round"] or "",
             rounds_tried=r["rounds_tried"], files_examined=r["files_examined_total"],
-            other_agreed_decls="; ".join(others)))
+            other_agreed_decls="; ".join(others), **static_cols(r["found_decl"], r["found_file"])))
     order = {lab: i for i, lab in enumerate(items)}
     lean_map.sort(key=lambda m: order.get(m["item"], 10**6))
 
@@ -174,13 +187,15 @@ def main():
                 w.writerow({k: (" | ".join(v) if isinstance(v, list) and k == "all_wordings" else v) for k, v in r.items()})
     write_csv("audit_table.csv", table, ["section", "item", "page", "lean_decl", "lean_location", "on_main_proof_path",
                                          "delta_types_3of3", "delta_types_any", "n_differences", "n_agreed_3of3",
-                                         "top_difference", "downstream_uses", "samples_valid"])
+                                         "top_difference", "downstream_uses", "samples_valid", "def_depth",
+                                         "def_chain", "file_axiom_sorry_admit_native_decide_unsafe"])
     write_csv("differences.csv", diffs, ["item", "decl", "type", "agreement", "summary", "paper_side", "lean_side",
                                          "paper_cite", "page", "paper_quote", "paper_quote_verified", "lean_file",
                                          "lean_lines", "lean_quote", "lean_quote_verified", "verdict_words", "all_wordings"])
     write_csv("paper_lean_map.csv", lean_map, ["item", "kind", "section", "page", "status", "lean_decl", "lean_location",
                                               "agreement", "found_round", "rounds_tried", "files_examined",
-                                              "other_agreed_decls"])
+                                              "other_agreed_decls", "def_depth", "def_chain",
+                                              "file_axiom_sorry_admit_native_decide_unsafe"])
     write_csv("paper_items_not_matched.csv", unmatched, ["item", "section", "rounds_tried", "status", "best_candidate",
                                                           "candidate_agreement"])
     write_csv("lean_theorems_without_paper_counterpart.csv", orphans,
