@@ -22,7 +22,10 @@ proves. Sorting those out takes a mathematician, and I'm not one.
 
 ## Where to start
 
-Start with [`out/review_shortlist.md`](out/review_shortlist.md). It has 21 differences, picked mechanically
+For an overview of all the results on one page, read [`out/summary.md`](out/summary.md): the headline numbers,
+the validation hits, a table of every pair compared, and the full paper-to-Lean map.
+
+For the differences themselves, start with [`out/review_shortlist.md`](out/review_shortlist.md). It has 21 differences, picked mechanically
 as the ones most worth an expert's time. Part A (8 entries) is about what is being estimated. Part B (13) is
 about how size is measured, and is mostly notation. Each entry has both quotes and links to the PDF page and
 the Lean line.
@@ -31,6 +34,7 @@ The rest of `out/`:
 
 | File | What's in it |
 |---|---|
+| [`summary.md`](out/summary.md) | The overview above, readable on GitHub. |
 | `report.html` | Everything on one page, with filters. Download it and open it locally; GitHub only shows the source. |
 | [`paper_lean_map.csv`](out/paper_lean_map.csv) | The paper-to-Lean map: each paper result or proof step searched (88 rows), the Lean declaration found, file and lines, how many of the 3 samples agreed, which search round. |
 | [`audit_table.csv`](out/audit_table.csv) | One row per (paper result, Lean declaration) pair that was compared (58 rows). |
