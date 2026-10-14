@@ -1,8 +1,8 @@
-# Navier–Stokes: NLP vs Lean
+# Navier–Stokes: Natural-Language Proof vs Lean
 
 **v0.1 - preliminary, unreviewed**
 
-A tool that audits differences between NLP and Lean proofs, ran against a set of curated targets in the OpenAI Navier-Stokes paper.
+A tool that audits differences between natural-language and Lean proofs, run against a set of curated targets in the OpenAI Navier-Stokes paper.
 
 ## Disclaimer
 

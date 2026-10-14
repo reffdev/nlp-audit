@@ -1,6 +1,6 @@
 # Documentation and data license: CC BY 4.0
 
-Copyright 2026 [NAME]
+Copyright 2026 Alex Reff
 
 The contents of `out/` (tables, report, review shortlist), `METHODOLOGY.md` and `README.md` are licensed under the
 Creative Commons Attribution 4.0 International License (CC BY 4.0):
