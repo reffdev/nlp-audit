@@ -36,7 +36,7 @@ Try a single result end to end (a few model calls):
 python audit/xref_llm.py files --items "Lemma 10.5" && python audit/xref_search.py --items "Lemma 10.5" && python audit/extract.py --section 10 --items "Lemma 10.5" && python audit/report.py
 ```
 
-The full sequence for the published run is in [METHODOLOGY.md](METHODOLOGY.md#reproducing). Responses are cached by prompt in `data/llm_raw.jsonl`, so if a run gets interrupted it picks up where it left off. To reuse the published run's responses, download `llm_raw.jsonl.gz` from the v0.1 release and unzip it to `data/llm_raw.jsonl`. A rerun with the same inputs and the same `AUDIT_LLM_MODEL` name then reads from the cache instead of calling the model.
+The full sequence for the published run is in [METHODOLOGY.md](METHODOLOGY.md#reproducing). Responses are cached by prompt in `data/llm_raw.jsonl`, so if a run gets interrupted it picks up where it left off. To reuse the published run's responses, download `llm_raw.jsonl.gz` from the v0.1 release and unzip it to `data/llm_raw.jsonl`. A rerun with the same inputs then reads from the cache instead of calling the model, as long as `AUDIT_LLM_MODEL` is set to exactly `nvidia/Qwen3.8-27B-NVFP4` and reasoning is left on (`AUDIT_LLM_THINKING` unset or `1`). The cache key includes the model name and the reasoning setting, so any other name misses the cache.
 
 ## How the pieces fit
 
