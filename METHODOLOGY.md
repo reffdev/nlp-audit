@@ -14,7 +14,7 @@ It also doesn't check the Lean itself. Nothing was compiled; the Lean repo has i
 |---|---|
 | Paper | *Finite time blowup for Navier–Stokes*, OpenAI, [PDF](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf), 166 pages |
 | Lean | [openai/NavierStokesAndEuler](https://github.com/openai/NavierStokesAndEuler) at `f9e8bc5b38b6e212696e8a30e3e91517af887bbd`, `NavierStokes/` only (816 files, 36,151 declarations). The Euler half is out of scope. |
-| Model | `nvidia/Qwen3.8-27B-NVFP4` on vLLM, run locally with reasoning on. Every request and response is logged in `data/llm_raw.jsonl`. |
+| Model | `nvidia/Qwen3.8-27B-NVFP4` on vLLM, run locally with reasoning on. Every response, with its reasoning, is logged in `data/llm_raw.jsonl`, keyed by a hash of its prompt; the log is attached to the v0.1 release. |
 
 ## How the targets were chosen
 

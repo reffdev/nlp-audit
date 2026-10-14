@@ -12,7 +12,7 @@ data/lean_*.jsonl
 data/openai-math_*
 # Working database and raw model log (contain full paper text and long model reasoning)
 data/audit.db
-data/llm_raw.jsonl
+data/llm_raw.jsonl*
 data/*.log
 data/ps_launch_test.txt
 data/overnight_launch.err
