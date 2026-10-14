@@ -4,7 +4,7 @@
 
 An attempt to audit, at scale, where OpenAI's Navier–Stokes paper and its Lean formalization differ.
 
-A tool that audits differences between natural-language and Lean proofs, run against a set of curated targets in the OpenAI Navier-Stokes paper.
+A tool that audits differences between natural-language and Lean proofs, run against a set of curated targets in the OpenAI Navier–Stokes paper.
 
 ## Disclaimer
 
