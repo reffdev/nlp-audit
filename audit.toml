@@ -60,4 +60,4 @@ patterns = ['four|\b4\b|\+\s*4', 'five|\b5\b|\+\s*5']
 label = "(10.19) in the proof of Lemma 10.5: the first term of the pressure-flux bound has a different form"
 item = "(10.19) in proof of Lemma 10.5"
 types = ["stronger-bound", "weaker-bound", "different-norm", "other"]
-patterns = ['A_R|A\s*/\s*R|1\s*/\s*R\s*\^?\s*2|R\^\{?-2|first term|\(B_R\s*\+\s*1\)']
+patterns = ['A_R|A\s*/\s*R|1\s*/\s*R\s*\^?\s*2|R\^\{?-2|first (term|part)|algebraic (form|structure)|\(B_R\s*\+\s*1\)']

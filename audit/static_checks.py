@@ -326,6 +326,21 @@ def def_depth(con, decls, resolve):
     print(f"def depth: {len(rows)} theorems and definitions; max {max(r[1] for r in rows)}")
 
 
+def unindexed(con):
+    """Theorems the Lean index misses: lean_index only reads declarations starting at column 0."""
+    rows = []
+    for path in sorted(C.SRC.rglob("*.lean")):
+        code = strip_comments(path.read_text(encoding="utf-8"))
+        for k, line in enumerate(code.splitlines(), start=1):
+            m = re.match(r"^[ 	]+(?:@\[[^\]]*\]\s*)?(?:(?:private|protected|noncomputable)\s+)*(?:theorem|lemma)\s+(\S+)", line)
+            if m:
+                rows.append((path.relative_to(C.REPO).as_posix(), k, m.group(1)))
+    con.execute("DROP TABLE IF EXISTS static_unindexed")
+    con.execute("CREATE TABLE static_unindexed (file, line, name)")
+    con.executemany("INSERT INTO static_unindexed VALUES (?,?,?)", rows)
+    print(f"indented theorems the index misses: {len(rows)} in {len({r[0] for r in rows})} file(s)")
+
+
 def main():
     con = sqlite3.connect(C.DB)
     con.row_factory = sqlite3.Row
@@ -345,6 +360,7 @@ def main():
     con.executemany("INSERT INTO static_statement_cut VALUES (?,?)", cut_rows)
     resolve = Resolver(decls)
     scan(con)
+    unindexed(con)
     dupes(con, decls, resolve)
     def_depth(con, decls, resolve)
     con.commit()

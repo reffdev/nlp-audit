@@ -42,7 +42,7 @@ The tool doesn't say whether the main theorem is true; that's the Lean proof's j
 ## Where to look
 
 - **[out/summary.md](out/summary.md)**: an overview of all the results on one page. It has the headline numbers, the validation hits, every pair compared, and the full paper-to-Lean map.
-- **[out/review_shortlist.md](out/review_shortlist.md)**: 21 differences picked by a fixed rule as the ones most worth an expert's time. Part A (8) is about what is being estimated, Part B (13) about how size is measured, mostly notation. Each entry has both quotes and links to the PDF page and the Lean line.
+- **[out/review_shortlist.md](out/review_shortlist.md)**: 22 differences picked by a fixed rule as the ones most worth an expert's time. Part A (9) is about what is being estimated, Part B (13) about how size is measured, mostly notation. Each entry has both quotes and links to the PDF page and the Lean line.
 - **[METHODOLOGY.md](METHODOLOGY.md)**: how it works in detail, the checks run on it, and its limitations.
 - **[USAGE.md](USAGE.md)**: how to run it yourself, what it costs, and how to point it at another paper.
 
@@ -53,7 +53,7 @@ The full results are in [`out/`](out/):
 | `report.html` | Everything on one page, with filters. Download it and open it locally; GitHub only shows the source. |
 | [`paper_lean_map.csv`](out/paper_lean_map.csv) | The paper-to-Lean map: each paper result or proof step searched (88 rows), the Lean declaration found, file and lines, how many samples agreed, which search round. |
 | [`audit_table.csv`](out/audit_table.csv) | One row per (paper result, Lean declaration) pair that was compared (58 rows). |
-| [`differences.csv`](out/differences.csv) | Every difference (1,014 rows): type, how many samples reported it, both quotes and whether they checked out, page and lines, and each sample's own wording. |
+| [`differences.csv`](out/differences.csv) | Every difference (1,546 rows): type, how many samples reported it, both quotes and whether they checked out, page and lines, and each sample's own wording. |
 | [`paper_items_not_matched.csv`](out/paper_items_not_matched.csv) | Targets without a 3-of-3 match (4 rows). |
 | [`lean_theorems_without_paper_counterpart.csv`](out/lean_theorems_without_paper_counterpart.csv) | Theorems in the compared files that weren't matched to anything in the paper (1,945 rows), mostly supporting steps. |
 | [`source_scan.csv`](out/source_scan.csv) | Counts of `sorry`, `axiom`, `admit`, `native_decide`, `unsafe` and a few rarer shortcuts, per Lean file. |
@@ -68,7 +68,7 @@ The working database (`data/audit.db`) isn't included, because it contains the f
 
 **The map.** 77 of the paper's 80 numbered results got a Lean match that all 3 samples agreed on. The other 3 got 2 out of 3, and none came up empty. There's no blueprint for this formalization (a blueprint is the usual document linking a paper's results to their Lean versions), and the paper references in the Lean comments use an older draft's numbering, so I don't know of another map like this. A decoy test suggests at least 1 in 10 of the confident matches could be wrong.
 
-**The differences.** These were only extracted for a pilot: Section 8, Lemma 10.5, and the numbered equations inside the proofs of Lemmas 8.2, 8.6 and 10.5. That's 58 paper/Lean pairs and 1,014 differences, 322 of which all 3 samples reported. Most are noise: different names, or the Lean spelling out conditions the paper leaves implicit. Only 17 of the 58 pairs are on the path to the main theorems that the tool could detect.
+**The differences.** These were only extracted for a pilot: Section 8, Lemma 10.5, and the numbered equations inside the proofs of Lemmas 8.2, 8.6 and 10.5. That's 58 paper/Lean pairs and 1,546 differences, 422 of which all 3 samples reported. Most are noise: different names, or the Lean spelling out conditions the paper leaves implicit. Only 17 of the 58 pairs are on the path to the main theorems that the tool could detect.
 
 **Validation.** Both discrepancies from Bastounis et al. showed up in all 3 samples: Lemma 8.6 (m+4 derivatives in the paper, m+5 in the Lean) and eq. (10.19) in the proof of Lemma 10.5 (the first term of the pressure-flux bound has a different form). That's weaker evidence than it sounds. I put Lemmas 8.6 and 10.5 on the target list because of their paper. The prompts never mention the discrepancies, but the tool didn't pick where to look. And the Lean docstring for the Lemma 8.6 theorem says "five torus derivatives lost", so the Lean was never hiding it.
 

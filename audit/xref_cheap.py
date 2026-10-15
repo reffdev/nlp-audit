@@ -8,7 +8,7 @@ Signals, all stored separately so they can be inspected:
   title_sim  section/subsection title vs file name
   explicit   decl docstring or file module doc cites this item's label (old numbering is common,
              so `label_in_paper` records whether a cited label exists in the published paper)
-Structural columns: reachable (from the main theorems, a lower bound), xfile_in (number of other
+Structural columns: reachable (from the main theorems; approximate both ways), xfile_in (number of other
 files referencing the decl), kind.
 
 The combined score is only a ranking heuristic for choosing what the LLM stage looks at.
@@ -65,7 +65,7 @@ def main():
     files = {r["file"]: dict(r) for r in con.execute("SELECT * FROM lean_files")}
     labels_now = {it["label"] for it in items}
 
-    # --- reachability (lower bound: misses implicit simp/instance use) ---
+    # --- reachability (approximate: misses implicit simp/instance use, and a misresolved name adds a false edge) ---
     g = defaultdict(set)
     for s, t in con.execute("SELECT source, target FROM lean_refs"):
         g[s].add(t)

@@ -1,10 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 """Phase 4: aggregate the Phase 3 extractions into tables (CSV + one static HTML page).
 
-Differences from the 3 independent samples are GROUPED, never voted: two deltas of the same pair and
-type are the same difference when their cited Lean lines overlap (within 1 line), or, when neither
-cites Lean lines, when they cite the same paper location. Each group keeps its agreement (how many of
-the 3 samples reported it) and every sample's wording. Nothing here judges whether a difference matters.
+Differences from the 3 independent samples are GROUPED, never voted. A group holds at most one delta per
+sample, and every two members must match each other directly (same pair and type, cited Lean lines sharing
+at least one line, or, when neither cites Lean lines, the same paper location), so groups never chain.
+Each group keeps its agreement (how many of the 3 samples reported it) and every sample's wording.
+Nothing here judges whether a difference matters.
+
+Quotes are re-checked against the text the model was shown: a Lean quote is attributed to the file whose
+shown lines contain it (the declaration's own file first), and a paper quote of 3 characters or fewer
+after normalization is reported as too short to verify.
 
 Outputs (out/):
   paper_lean_map.csv                       one row per located target: paper result or proof step -> Lean declaration
@@ -26,6 +31,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import config as C  # noqa: E402
+import extract as E  # noqa: E402
 from xref_search import trivial  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -36,6 +42,7 @@ PAPER_URL = C.PAPER["url"]
 SEVERITY = ["stronger-bound", "missing-hypothesis", "different-norm", "missing-supremum", "different-domain",
             "extra-hypothesis", "weaker-bound", "other"]
 RANK = {t: i for i, t in enumerate(SEVERITY)}
+SHORT_QUOTE = 3  # normalized paper quotes this short match almost anywhere
 
 
 def lines_of(s):
@@ -44,29 +51,53 @@ def lines_of(s):
 
 
 def group_deltas(rows):
-    """rows: dicts of one pair & type. Union deltas from different samples that cite overlapping Lean lines
-    (or, without Lean lines, the same paper citation). Overlap means sharing at least one line; adjacent
-    lines are not merged, since a statement's hypotheses and conclusion sit on consecutive lines."""
-    parent = list(range(len(rows)))
+    """rows: dicts of one pair & type, ordered by sample. Returns groups holding at most one delta per sample,
+    in which every two members match directly: cited Lean lines share at least one line (adjacent lines are
+    not merged, since a statement's hypotheses and conclusion sit on consecutive lines), or, when neither
+    cites Lean lines, the same paper citation. Each delta joins the group it overlaps most, so groups never
+    chain through a middle member."""
+    def overlap(a, b):
+        la, lb = lines_of(a["lean_lines"]), lines_of(b["lean_lines"])
+        if la and lb:
+            return max(0, min(la[1], lb[1]) - max(la[0], lb[0]) + 1)
+        if not la and not lb and (a["paper_cite"] or "").strip() == (b["paper_cite"] or "").strip():
+            return 1
+        return 0
 
-    def find(i):
-        while parent[i] != i:
-            parent[i] = parent[parent[i]]
-            i = parent[i]
-        return i
+    groups = []
+    for r in rows:
+        best, best_ov = None, 0
+        for g in groups:
+            if any(m["sample"] == r["sample"] for m in g):
+                continue
+            ovs = [overlap(r, m) for m in g]
+            if min(ovs) > 0 and sum(ovs) > best_ov:
+                best, best_ov = g, sum(ovs)
+        if best is None:
+            groups.append([r])
+        else:
+            best.append(r)
+    return groups
 
-    for i, a in enumerate(rows):
-        for j in range(i + 1, len(rows)):
-            b = rows[j]
-            la, lb = lines_of(a["lean_lines"]), lines_of(b["lean_lines"])
-            same = (la and lb and la[0] <= lb[1] and lb[0] <= la[1]) or \
-                   (not la and not lb and (a["paper_cite"] or "").strip() == (b["paper_cite"] or "").strip())
-            if same:
-                parent[find(i)] = find(j)
-    groups = defaultdict(list)
-    for i, r in enumerate(rows):
-        groups[find(i)].append(r)
-    return list(groups.values())
+
+def lean_match_file(quote, lines, shown, decl_file):
+    """The file whose shown lines contain the Lean quote at the cited line numbers (extract.check_lean's
+    test), preferring the declaration's own file; None if no shown range contains it."""
+    ln = lines_of(lines)
+    if not ln or not quote:
+        return None
+    q = re.sub(r"\s+", "", quote)
+    hits = []
+    for f, x, y in shown:
+        if x <= ln[0] <= y or x <= ln[1] <= y:
+            src = (C.REPO / f).read_text(encoding="utf-8").splitlines()
+            if q in re.sub(r"\s+", "", "".join(src[max(ln[0], x) - 1:min(ln[1], y)])):
+                hits.append(f)
+    return decl_file if decl_file in hits else (hits[0] if hits else None)
+
+
+def quote_state(v):
+    return "" if v is True else (" (too short to verify)" if v == "too short" else " (not verified)")
 
 
 def main():
@@ -82,12 +113,24 @@ def main():
     for r in con.execute("SELECT item, cited_from, part, page FROM paper_downstream ORDER BY line"):
         downstream_where[r[0]].append(f"{r[1]} ({r[2]}, p.{r[3]})")
     pairs = [dict(r) for r in con.execute("SELECT * FROM extract_pairs ORDER BY rowid")]
+    # how each pair's declaration was located: samples naming it, and whether its target reached 3-of-3
+    located = {}
+    for r in con.execute("SELECT item, status, found_all FROM search_status"):
+        for c in json.loads(r["found_all"] or "[]"):
+            located[(r["item"], c["decl"])] = f"{c['agreement']}/3" + (
+                "" if r["status"].startswith("found") else " (weak target)")
+    for p in pairs:
+        p["located_by"] = located.get((p["item"], p["decl"]), "")
 
     # ---- grouped differences ----
     diffs = []
     for p in pairs:
         rows = [dict(r) for r in con.execute("SELECT * FROM extract_deltas WHERE pair_id=? ORDER BY sample, rowid",
                                              (p["pair_id"],))]
+        shown = E.lean_context(con, p["decl"])[1]
+        for r in rows:
+            r["lean_file"] = lean_match_file(r["lean_quote"], r["lean_lines"], shown, p["decl_file"])
+            r["paper_short"] = bool(r["paper_quote"]) and len(E.norm(r["paper_quote"])) <= SHORT_QUOTE
         by_type = defaultdict(list)
         for r in rows:
             by_type[r["type"]].append(r)
@@ -101,8 +144,9 @@ def main():
                     severity=RANK.get(t, len(SEVERITY)),
                     summary=rep["description"], paper_side=rep["paper_side"], lean_side=rep["lean_side"],
                     paper_cite=rep["paper_cite"], page=rep["page"], paper_quote=rep["paper_quote"],
-                    paper_quote_verified=all(r["paper_cite_ok"] for r in g if r["paper_quote"]),
-                    lean_file=p["decl_file"],
+                    paper_quote_verified=("too short" if rep["paper_short"] else
+                                          all(r["paper_cite_ok"] for r in g if r["paper_quote"] and not r["paper_short"])),
+                    lean_file=rep["lean_file"] or p["decl_file"], located_by=p["located_by"],
                     lean_lines=(str(ln[0]) if ln[0] == ln[1] else f"{ln[0]}-{ln[1]}") if ln else "",
                     lean_quote=rep["lean_quote"], lean_quote_verified=all(r["lean_cite_ok"] for r in g if r["lean_quote"]),
                     verdict_words=", ".join(sorted({w for r in g for w in (r["verdict_words"] or "").split(", ") if w})),
@@ -137,7 +181,7 @@ def main():
             n_differences=len(ds), n_agreed_3of3=sum(d["agreement"] == 3 for d in ds),
             top_difference=(f"[{top['type']}, {top['agreement']}/3] {top['summary']}" if top else ""),
             top_severity=top["severity"] if top else 99, top_agreement=top["agreement"] if top else 0,
-            downstream_uses=downstream[p["item"]], samples_valid=p["samples_ok"],
+            downstream_uses=downstream[p["item"]], samples_valid=p["samples_ok"], located_by=p["located_by"],
             **static_cols(p["decl"], p["decl_file"])))
     table.sort(key=lambda r: (r["top_severity"], -r["top_agreement"], r["item"]))
 
@@ -186,11 +230,13 @@ def main():
             w.writeheader()
             for r in rows:
                 w.writerow({k: (" | ".join(v) if isinstance(v, list) and k == "all_wordings" else v) for k, v in r.items()})
-    write_csv("audit_table.csv", table, ["section", "item", "page", "lean_decl", "lean_location", "on_main_proof_path",
+    write_csv("audit_table.csv", table, ["section", "item", "page", "lean_decl", "lean_location", "located_by",
+                                         "on_main_proof_path",
                                          "delta_types_3of3", "delta_types_any", "n_differences", "n_agreed_3of3",
                                          "top_difference", "downstream_uses", "samples_valid", "def_depth",
                                          "def_chain", "file_axiom_sorry_admit_native_decide_unsafe"])
-    write_csv("differences.csv", diffs, ["item", "decl", "type", "agreement", "summary", "paper_side", "lean_side",
+    write_csv("differences.csv", diffs, ["item", "decl", "located_by", "type", "agreement", "summary", "paper_side",
+                                         "lean_side",
                                          "paper_cite", "page", "paper_quote", "paper_quote_verified", "lean_file",
                                          "lean_lines", "lean_quote", "lean_quote_verified", "verdict_words", "all_wordings"])
     write_csv("paper_lean_map.csv", lean_map, ["item", "kind", "section", "page", "status", "lean_decl", "lean_location",
@@ -247,12 +293,13 @@ def write_shortlist(diffs, gate, commit, items):
                if ln else f"{REPO_URL}/{commit}/{d['lean_file']}")
         tag = " · **validation**" if id(d) in gate_ids else ""
         return [f"## {k}. {d['item']} · `{d['decl'].split('.', 1)[-1]}`{tag}", "",
-                f"- **Type:** {d['type']} · reported by {d['agreement']}/3 samples",
+                f"- **Type:** {d['type']} · reported by {d['agreement']}/3 samples · "
+                f"declaration located by {d['located_by'] or 'n/a'}",
                 f"- **Difference:** {d['summary']}",
                 f"- **Paper** ([p.{d['page']}]({PAPER_URL}#page={d['page']}), {d['paper_cite']}): {d['paper_side']}",
-                f"  - quote{'' if d['paper_quote_verified'] else ' (not verified)'}: `{d['paper_quote']}`",
+                f"  - quote{quote_state(d['paper_quote_verified'])}: `{d['paper_quote']}`",
                 f"- **Lean** ([{d['lean_file'].removeprefix(C.PREFIX)}:{d['lean_lines']}]({url})): {d['lean_side']}",
-                f"  - quote{'' if d['lean_quote_verified'] else ' (not verified)'}: `{d['lean_quote']}`", ""]
+                f"  - quote{quote_state(d['lean_quote_verified'])}: `{d['lean_quote']}`", ""]
 
     k = 0
     for d in picked:
@@ -307,8 +354,8 @@ def write_summary(table, diffs, lean_map, unmatched, orphans, gate, commit, pilo
            f"{C.REPORT.get('pilot_label', 'pilot')} pilot, Lemma 10.5 and selected proof steps.",
            f"- **Differences:** {len(diffs):,} grouped, {n3} of them reported by all 3 samples. Most are naming, or "
            "the Lean spelling out conditions the paper leaves implicit.",
-           f"- **Validation:** {len({d['item'] for d in gate})} of {len(C.VALIDATION)} published discrepancies "
-           "reported by all 3 samples (see below).",
+           f"- **Validation:** {len({d['item'] for d in gate if d['agreement'] == 3})} of {len(C.VALIDATION)} "
+           "published discrepancies reported by all 3 samples (see below).",
            "- **Start with** [review_shortlist.md](review_shortlist.md): the differences most worth an expert's time.",
            ""]
     tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
@@ -349,15 +396,17 @@ def write_summary(table, diffs, lean_map, unmatched, orphans, gate, commit, pilo
 
     out += ["## Pairs compared", "",
             "Most severe difference first. *Agreed* counts differences reported by all 3 samples. *Main path*: the "
-            "declaration is on the detected dependency path of the main theorems (\"not found\" doesn't mean unused). "
+            "declaration is on the detected dependency path of the main theorems read from the source, so it can miss real uses and include spurious ones; \"not found\" doesn't mean unused. "
+            "*Located by*: how many of the 3 samples named this declaration when matching. "
             "*Depth*: layers of the formalization's own definitions under the statement.", "",
-            "| Paper | Lean declaration | Main path | Agreed / all | Depth | Most severe agreed difference |",
-            "|---|---|---|--:|--:|---|"]
+            "| Paper | Lean declaration | Located by | Main path | Agreed / all | Depth | Most severe agreed difference |",
+            "|---|---|---|---|--:|--:|---|"]
     for r in table:
         file, lines = r["lean_location"].rsplit(":", 1)
         out.append(f"| {md_paper(r['page'], r['item'])} | "
                    f"{md_lean(commit, file, lines, '`' + r['lean_decl'].split('.', 1)[-1] + '`')} | "
-                   f"{r['on_main_proof_path']} | {r['n_agreed_3of3']} / {r['n_differences']} | {r['def_depth']} | "
+                   f"{r['located_by']} | {r['on_main_proof_path']} | {r['n_agreed_3of3']} / {r['n_differences']} | "
+                   f"{r['def_depth']} | "
                    f"{md(r['top_difference'], 220)} |")
     out.append("")
 
@@ -425,9 +474,9 @@ def write_html(table, diffs, unmatched, orphans, gate, commit, downstream_where,
                 f'<td>{esc(d["summary"])}<details><summary>sides, quotes, all wordings</summary>'
                 f'<p><b>Paper:</b> {esc(d["paper_side"])}<br><b>Lean:</b> {esc(d["lean_side"])}</p>'
                 f'<p><b>Paper quote</b> ({paper_link(d["page"], d["paper_cite"])}'
-                f'{"" if d["paper_quote_verified"] else ", <em>not verified</em>"}): <code>{esc(d["paper_quote"])}</code></p>'
+                f'{"" if d["paper_quote_verified"] is True else ", <em>" + quote_state(d["paper_quote_verified"]).strip(" ()") + "</em>"}): <code>{esc(d["paper_quote"])}</code></p>'
                 f'<p><b>Lean quote</b> ({lean_link(commit, d["lean_file"], d["lean_lines"])}'
-                f'{"" if d["lean_quote_verified"] else ", <em>not verified</em>"}): <code>{esc(d["lean_quote"])}</code></p>'
+                f'{"" if d["lean_quote_verified"] is True else ", <em>" + quote_state(d["lean_quote_verified"]).strip(" ()") + "</em>"}): <code>{esc(d["lean_quote"])}</code></p>'
                 + (f'<p class="warn">Judgment words used: {esc(d["verdict_words"])}</p>' if d["verdict_words"] else "")
                 + "<ul>" + "".join(f"<li>{esc(w)}</li>" for w in d["all_wordings"]) + "</ul></details></td></tr>")
         uses = downstream_where.get(r["item"], [])
@@ -435,7 +484,7 @@ def write_html(table, diffs, unmatched, orphans, gate, commit, downstream_where,
             f'<tbody class="pair"><tr class="p">'
             f'<td>{esc(r["item"])}<div class="sub">{paper_link(r["page"], "paper")}</div></td>'
             f'<td><code>{esc(r["lean_decl"].split(".", 1)[-1])}</code>'
-            f'<div class="sub">{lean_link(commit, file, lines)} · main proof path: {esc(r["on_main_proof_path"])}</div></td>'
+            f'<div class="sub">{lean_link(commit, file, lines)} · located by {esc(r["located_by"] or "n/a")} · main proof path: {esc(r["on_main_proof_path"])}</div></td>'
             f'<td>{esc(r["top_difference"])}</td>'
             f'<td class="num">{r["n_agreed_3of3"]} / {r["n_differences"]}</td>'
             f'<td class="num" title="{esc("; ".join(uses))}">{r["downstream_uses"]}</td></tr>'
