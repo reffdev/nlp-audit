@@ -66,9 +66,12 @@ TASK = """Extract the following from the PAPER ITEM and the LEAN DECLARATION abo
 over several Lean declarations (the others are listed for context only); compare this declaration only with the
 parts of the paper item it addresses, and list the paper parts it does not address under "paper_parts_not_covered".
 
-Lean hypotheses include the declaration's explicit arguments and hypotheses, implicit and instance arguments,
-and the section `variable`s in scope (shown separately), minus anything removed by `omit`. Use the definitions
-shown to interpret what the Lean statement says.
+Lean hypotheses include the declaration's explicit arguments and hypotheses and its implicit and instance
+arguments. Section `variable`s (shown separately) become hypotheses only under Lean 4's rule: a section variable is
+included in a theorem only if the theorem's statement refers to it (directly, or through another included
+variable's type), or if an `include` command brings it in; `omit` removes one. Do not list a section variable
+the statement does not use unless it is `include`d. Use the definitions shown to interpret what the Lean statement
+says.
 
 Quoting rules: "quote" must be copied verbatim (a short fragment is enough). For the paper, "cite" is the item
 label or an equation number like "(8.12)". For Lean, "lines" is a line range like "1059-1061" from the numbers
@@ -122,8 +125,9 @@ def lean_context(con, decl):
     if var_lines:
         vt = "\n".join(numbered(file, x, y)[0] for x, y in var_lines)
         shown += [(file, x, y) for x, y in var_lines]
-        parts.append(f"SECTION VARIABLES IN SCOPE (same file; they are hypotheses of the declaration unless "
-                     f"omitted)\n{vt}")
+        parts.append(f"SECTION VARIABLES IN SCOPE (same file; under Lean 4's rule they are hypotheses of the "
+                     f"declaration only if its statement refers to them or they are `include`d, and not "
+                     f"`omit`ted)\n{vt}")
     refs = [t for (t,) in con.execute("SELECT target FROM lean_refs WHERE source=? AND location='statement'", (decl,))]
     defs = []
     for t in refs[:MAX_REF_DECLS]:

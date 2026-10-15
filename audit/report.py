@@ -21,6 +21,8 @@ Outputs (out/):
    target can have several declarations named by all 3, so it is not the same as being the map's one found_decl)
   paper_items_not_matched.csv              paper items without a confident Lean counterpart (all sections)
   lean_theorems_without_paper_counterpart.csv  theorems in the pilot files not located for any paper item
+  differences_samples.csv                  one row per difference per sample, with its group and every check
+  extracted_fields.csv                     every extracted hypothesis, conclusion and proof-route summary
   report.html                              everything above on one static page
   summary.md                               a GitHub-readable summary of the above
 """
@@ -78,6 +80,7 @@ def main():
         p["located_by"] = located.get((p["item"], p["decl"]), "")
 
     # ---- grouped differences ----
+    sample_rows = []  # every delta of every sample, for differences_samples.csv
     adjudicated = {}
     if con.execute("SELECT name FROM sqlite_master WHERE name='adjudication'").fetchone():
         adjudicated = {r[0]: r[1] for r in con.execute("SELECT group_key, yes FROM adjudication")}
@@ -95,6 +98,17 @@ def main():
         for t, rs in by_type.items():
             for g in group_deltas(rs):
                 samples = sorted({r["sample"] for r in g})
+                gk = group_key(g)
+                for r in g:
+                    sample_rows.append(dict(
+                        item=p["item"], decl=p["decl"], sample=r["sample"], type=t, group=gk, group_size=len(g),
+                        lean_lines=r["lean_lines"], lean_quote=r["lean_quote"],
+                        lean_quote_found_in=r["lean_file"] or "", lean_quote_verified=r["lean_cite_ok"],
+                        paper_cite=r["paper_cite"], page=r["page"], paper_quote=r["paper_quote"],
+                        paper_quote_too_short=int(r["paper_short"]), paper_quote_in_item=r["paper_cite_ok"],
+                        paper_quote_on_page=r.get("paper_on_page", ""),
+                        paper_side=r["paper_side"], lean_side=r["lean_side"], description=r["description"],
+                        verdict_words=r["verdict_words"] or ""))
                 rep = g[0]
                 ln = lines_of(rep["lean_lines"])
                 diffs.append(dict(
@@ -114,6 +128,8 @@ def main():
                     verdict_words=", ".join(sorted({w for r in g for w in (r["verdict_words"] or "").split(", ") if w})),
                     all_wordings=[f"[sample {r['sample']}] {r['description']}" for r in g]))
     diffs.sort(key=lambda d: (d["severity"], -d["agreement"], d["item"], d["decl"]))
+    for d in diffs:
+        d["likely_explanation"] = likely_explanation(d)
 
     # ---- static, source-level checks (audit/static_checks.py), if run ----
     tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
@@ -200,10 +216,29 @@ def main():
     for d in diffs:
         d["agreement_csv"] = d["agreement"] or ""
     write_csv("differences.csv", diffs, ["item", "decl", "located_by", "type", "overlapping_citations",
-                                         "adjudicated_same", "agreement_csv", "summary", "paper_side",
+                                         "adjudicated_same", "agreement_csv", "likely_explanation", "summary",
+                                         "paper_side",
                                          "lean_side",
                                          "paper_cite", "page", "paper_quote", "paper_quote_verified", "lean_file",
                                          "lean_lines", "lean_quote", "lean_quote_verified", "verdict_words", "all_wordings"])
+    write_csv("differences_samples.csv", sample_rows,
+              ["item", "decl", "sample", "type", "group", "group_size", "lean_lines", "lean_quote",
+               "lean_quote_found_in", "lean_quote_verified", "paper_cite", "page", "paper_quote",
+               "paper_quote_too_short", "paper_quote_in_item", "paper_quote_on_page", "paper_side", "lean_side",
+               "description", "verdict_words"])
+    # every extracted field of every sample; proof-route summaries carry no citation and are not verified, and
+    # Lean hypotheses are read from source, so they may list section variables Lean itself would not include
+    con.row_factory = sqlite3.Row
+    fields = []
+    for r in con.execute("SELECT f.*, p.item, p.decl FROM extract_fields f JOIN extract_pairs p USING(pair_id) "
+                         "ORDER BY p.rowid, f.sample, f.rowid"):
+        r = dict(r)
+        note = ("unverified: no citation required" if r["field"] == "proof_route" else
+                "source-derived; may include section variables Lean would not include"
+                if r["side"] == "lean" and r["field"] == "hypotheses" else "")
+        fields.append(dict(r, verification_note=note, on_page=r.get("on_page", "")))
+    write_csv("extracted_fields.csv", fields, ["item", "decl", "sample", "side", "field", "text", "cite", "quote",
+                                               "cite_ok", "on_page", "page", "verification_note"])
     write_csv("paper_lean_map.csv", lean_map, ["item", "kind", "section", "page", "status", "lean_decl", "lean_location",
                                               "agreement", "found_round", "rounds_tried", "files_examined",
                                               "other_agreed_decls", "def_depth", "def_chain",
@@ -235,24 +270,57 @@ def main():
 SHORTLIST_TYPES = ("stronger-bound", "weaker-bound", "missing-supremum")
 SHORTLIST_TIER_B = ("different-norm",)
 
+# likely_explanation: a fixed label assigned by rule from the type and the samples' wording, to sort the
+# shortlist. It is a reading aid, not a finding; labels in LOWER_TIER are formalization conventions that usually
+# explain a textual difference, and those entries are listed after the others.
+EXPLANATION_RULES = [
+    ("naming", r"\buses the (class|symbol)\b|\bnotation\b|\bsymbol\b|\bnamed\b|\bdifferent names?\b"),
+    ("parameter-set-uniformity", r"parameter set|uniform(ity|ly)? over (a |the )?(parameter )?set|"
+                                 r"\bover (the|a) set [A-Z]\b|quantifies over a (parameter )?set"),
+    ("quantifier-made-explicit", r"existential (nonnegative )?constant|explicit(ly)? (quantif|constant)|"
+                                 r"makes .{0,40}explicit"),
+    ("incomplete-pair-coverage", r"absent from the Lean|not (covered|addressed)|does not (address|include) the"),
+    ("needs-translation", r"algebraic (form|structure)|expressed (with|in) different|different quantities"),
+]
+LOWER_TIER = ("naming", "parameter-set-uniformity", "quantifier-made-explicit")
+
+
+def likely_explanation(d):
+    text = " ".join(str(d.get(k) or "") for k in ("summary", "paper_side", "lean_side"))
+    for label, pat in EXPLANATION_RULES:
+        if label != "naming" and d["type"] == "different-norm":
+            return "norm-packaging"  # a norm difference that mentions a set or quantifier is still about the norm
+        if re.search(pat, text, re.I):
+            return label
+    if d["type"] == "different-norm":
+        return "norm-packaging"
+    if d["type"] in ("stronger-bound", "weaker-bound", "missing-supremum"):
+        return "substantive-candidate"
+    return "needs-translation"
+
 
 def write_shortlist(diffs, gate, commit, items):
-    """A short list for expert review: differences reported by all 3 samples whose type concerns what is
-    estimated (bounds, norms, uniformity), plus the validation hits. Naming and explicit-hypothesis
-    differences are left to the full tables."""
+    """A short list for expert review: differences reported by all 3 samples (overlapping citations, confirmed
+    by adjudication) whose type concerns what is estimated (bounds, norms, uniformity), plus the validation hits.
+    Within each part, entries whose likely_explanation is a formalization convention come last."""
+    def tier(d):
+        return d["likely_explanation"] in LOWER_TIER
     picked = [d for d in diffs if d["agreement"] == 3 and d["type"] in SHORTLIST_TYPES]
     for g in gate:
         if g not in picked and g["agreement"] == 3:  # the shortlist only lists what all 3 samples reported
             picked.append(g)
-    picked.sort(key=lambda d: (d["severity"], d["item"], d["decl"]))
+    picked.sort(key=lambda d: (tier(d), d["severity"], d["item"], d["decl"]))
     tier_b = [d for d in diffs if d["agreement"] == 3 and d["type"] in SHORTLIST_TIER_B and d not in picked]
-    tier_b.sort(key=lambda d: (d["item"], d["decl"]))
+    tier_b.sort(key=lambda d: (tier(d), d["item"], d["decl"]))
     gate_ids = {id(g) for g in gate}
     out = ["# Review shortlist", "",
-           "Differences between the paper and the Lean that are probably most worth an expert's time, picked by a "
-           "fixed rule rather than by judgment. **No mathematician has reviewed these yet. Each one is a place "
-           "where the two say different things, not a claimed error.** All the data is in `out/differences.csv`, "
-           "and the method is in `METHODOLOGY.md`.", "",
+           "**Selected by a fixed rule; not reviewed by a mathematician; entries are textual differences, not "
+           "established mathematical differences.** Each entry also carries a `likely_explanation`, a fixed "
+           "label assigned by rule from the type and wording (" + ", ".join(
+               ["parameter-set-uniformity", "quantifier-made-explicit", "norm-packaging", "naming",
+                "incomplete-pair-coverage", "needs-translation", "substantive-candidate"]) + "); it is a reading "
+           "aid, not a finding. Entries labelled " + ", ".join(LOWER_TIER) + " are listed last in each part. All "
+           "the data is in `out/differences.csv`, and the method is in `METHODOLOGY.md`.", "",
            *([C.REPORT["target_note"], ""] if C.REPORT.get("target_note") else []),
            "## Part A: differences in what is estimated", "",
            "Every difference that all 3 samples reported (citing overlapping Lean lines, and confirmed the same "
@@ -266,8 +334,9 @@ def write_shortlist(diffs, gate, commit, items):
                if ln else f"{REPO_URL}/{commit}/{d['lean_file']}")
         tag = " · **validation**" if id(d) in gate_ids else ""
         return [f"## {k}. {d['item']} · `{d['decl'].split('.', 1)[-1]}`{tag}", "",
-                f"- **Type:** {d['type']} · reported by {d['overlapping_citations']}/3 samples, confirmed the same "
-                f"difference by {d['adjudicated_same'] if d['adjudicated_same'] != '' else 'n/a'}/3 adjudication samples · "
+                f"- **Type:** {d['type']} · likely explanation: `{d['likely_explanation']}` · reported by "
+                f"{d['overlapping_citations']}/3 samples, confirmed the same difference by "
+                f"{d['adjudicated_same'] if d['adjudicated_same'] != '' else 'n/a'}/3 adjudication samples · "
                 f"declaration located by {d['located_by'] or 'n/a'}",
                 f"- **Difference:** {d['summary']}",
                 f"- **Paper** ([p.{d['page']}]({PAPER_URL}#page={d['page']}), {d['paper_cite']}): {d['paper_side']}",
@@ -288,7 +357,8 @@ def write_shortlist(diffs, gate, commit, items):
         k += 1
         out += entry(k, d)
     (OUT / "review_shortlist.md").write_text("\n".join(out), encoding="utf-8")
-    print(f"review shortlist: {len(picked)} entries in part A, {len(tier_b)} in part B")
+    print(f"review shortlist: {len(picked)} entries in part A, {len(tier_b)} in part B; lower tier: "
+          f"{sum(tier(d) for d in picked + tier_b)}")
 
 
 def md(s, limit=None):
@@ -331,9 +401,10 @@ def write_summary(table, diffs, lean_map, unmatched, orphans, gate, vres, commit
            f"overlapping citations from all 3 samples; {n3} of those were confirmed by adjudication to describe the "
            "same difference. Most are naming, or "
            "the Lean spelling out conditions the paper leaves implicit.",
-           f"- **Validation:** {sum(r['k'] == 3 for r in vres)} of {len(vres)} published discrepancies reported "
-           "by all 3 samples at the expected Lean lines; the same check fires on "
-           f"{max((r['control']['window_rate'] for r in vres), default=0):.0%} or less of other places (see below).",
+           "- **Retrospective recovery:** " + "; ".join(
+               f"{r['target']['item']}: {r['k']} of 3 samples at the expected Lean lines (the same check fires on "
+               f"{r['control']['pairs_fired']} of {r['control']['pairs']} other pairs)" for r in vres)
+           + ". The targets were chosen because of the paper that published them (see below).",
            "- **Start with** [review_shortlist.md](review_shortlist.md): the differences most worth an expert's time.",
            ""]
     tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
@@ -348,10 +419,11 @@ def write_summary(table, diffs, lean_map, unmatched, orphans, gate, vres, commit
                       f"({unref} copies unreferenced). See [duplicate_statements.csv](duplicate_statements.csv)."]
 
     if C.VALIDATION:
-        out += ["## Validation", "",
+        out += ["## Retrospective recovery of two published discrepancies", "",
                 "The two discrepancies Bastounis, Circelli and Hansen published "
                 "([arXiv:2610.08144](https://arxiv.org/abs/2610.08144)). These results were put on the target list "
-                "because of that paper; the prompts never describe the discrepancies.", ""]
+                "because of that paper, so this checks recovery when the tool is pointed at them, not discovery; the "
+                "prompts never describe the discrepancies.", ""]
         out += ["Each target is a place, not a wording: the Lean declaration, the lines of the expression the "
                 "discrepancy is about, and the difference types that count. A sample hits it if it reported a "
                 "difference of one of those types citing those lines. The control runs the same check over the "
@@ -362,9 +434,9 @@ def write_summary(table, diffs, lean_map, unmatched, orphans, gate, vres, commit
                 con.execute("SELECT file FROM lean_decls WHERE name=?", (v["decl"],)).fetchone()[0]
             out.append(f"- **{md(v['item'])}** · `{v['decl'].split('.', 1)[-1]}` · "
                        f"{md_lean(commit, decl_file, str(v['lines']))} · {' / '.join(v['types'])}: "
-                       f"**{r['k']} of 3 samples**. Control: fires on {c['window_rate']:.1%} of "
-                       f"{c['windows']:,} windows over the other {c['pairs']} pairs' statements "
-                       f"({c['pairs_fired']} of {c['pairs']} pairs).")
+                       f"**{r['k']} of 3 samples**. Control: the same check fires on {c['pairs_fired']} of the "
+                       f"other {c['pairs']} pairs, and on {c['window_rate']:.1%} of {c['windows']:,} windows along "
+                       "their statements.")
             for d in gate:
                 if d["item"] == v["item"]:
                     out.append(f"  - {d['overlapping_citations']}/3 overlapping, adjudicated "

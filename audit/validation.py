@@ -3,8 +3,8 @@
 
 A target in audit.toml ([[validation]]) names a paper item, the Lean declaration, the Lean lines where the
 known discrepancy sits, and the difference types that count. A sample "hits" the target when it reported a
-difference of one of those types whose cited Lean lines overlap the target lines in the declaration's own
-file. The result is counted per sample (k of 3), so it doesn't depend on how report.py groups differences,
+difference of one of those types whose cited Lean lines overlap the target lines, and whose Lean quote is
+actually found at those lines of the declaration's own file (an unplaceable quote is not a hit). The result is counted per sample (k of 3), so it doesn't depend on how report.py groups differences,
 and no wording is involved.
 
 The control runs the same check everywhere else: over every other extracted pair, a window of the same
@@ -30,13 +30,13 @@ def _overlaps(a, b):
 
 
 def _own_file(con, deltas, decl, decl_file):
-    """Keep deltas whose Lean citation is in the declaration's own file (or couldn't be placed at all)."""
+    """Keep deltas whose Lean quote is found at the cited lines of the declaration's own file."""
     import extract as E
     shown = E.lean_context(con, decl)[1]
     out = []
     for d in deltas:
         f = lean_match_file(d["lean_quote"], d["lean_lines"], shown, decl_file)
-        if f in (None, decl_file):
+        if f == decl_file:
             out.append(d)
     return out
 
@@ -104,8 +104,8 @@ def describe(r):
     if not r["extracted"]:
         return f"{v['item']}: not extracted"
     return (f"{v['item']}: {r['k']} of 3 samples reported a {' / '.join(sorted(v['types']))} difference at "
-            f"{where}. Control: the same check fires on {c['window_rate']:.1%} of {c['windows']} windows over the "
-            f"statements of the other {c['pairs']} pairs ({c['pairs_fired']} of {c['pairs']} pairs).")
+            f"{where}. Control: the same check fires on {c['pairs_fired']} of the other {c['pairs']} pairs, "
+            f"and on {c['fired']} of {c['windows']} windows ({c['window_rate']:.1%}) along their statements.")
 
 
 if __name__ == "__main__":

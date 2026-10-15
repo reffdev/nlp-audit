@@ -39,7 +39,7 @@ pilot_label = "Section 8"
 # Shown at the top of the review shortlist (Markdown). Say how the targets were chosen.
 target_note = """**How the targets were chosen.** Section 8 was the pilot. Lemmas 8.6 and 10.5 were added because Bastounis, Circelli and Hansen (arXiv:2610.08144) had already found discrepancies there, and the proof-level targets only cover the proofs of Lemmas 8.2, 8.6 and 10.5. The prompts never mention those discrepancies, but they did decide where the tool looked."""
 # Shown above the validation entries in report.html (HTML).
-validation_intro = """<b>Validation against the two published discrepancies</b> (Bastounis, Circelli &amp; Hansen, \
+validation_intro = """<b>Retrospective recovery of two published discrepancies</b> (Bastounis, Circelli &amp; Hansen, \
 <a href="https://arxiv.org/abs/2610.08144">arXiv:2610.08144</a>): \
 Lemma 8.6 (the paper loses m+4 derivatives, the Lean m+5) and eq. (10.19) inside the proof of Lemma 10.5 (the \
 pressure-flux bound has a different first term). Lemma 8.6 and Lemma 10.5 were put on the target list because of \
