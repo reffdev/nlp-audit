@@ -26,6 +26,7 @@ from pathlib import Path
 import config as C
 import llm
 import paper_text as PT
+import quotes as Q
 import xref_llm as X
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -152,9 +153,7 @@ def paper_context(it, page_of):
             + f"STATEMENT:\n{stmt}\n\nPROOF:\n{proof[:PROOF_CAP]}")
 
 
-def norm(s):
-    s = re.sub(r"\\[a-zA-Z]+|[{}$\\]", " ", s or "")
-    return re.sub(r"\s+", "", s).lower()
+norm = Q.norm  # see quotes.py: LaTeX commands are kept as the symbols they stand for
 
 
 def check_lean(quote, lines, shown):
@@ -172,8 +171,13 @@ def check_lean(quote, lines, shown):
 
 
 def check_paper(quote, paper_text):
-    q = norm(quote)
-    return int(bool(q) and q in norm(paper_text))
+    """Found anywhere in the item text the model was shown (1/0)."""
+    return int(Q.found(quote, paper_text))
+
+
+def check_paper_page(quote, page):
+    """Found on the cited printed page (1/0), or None when the page is unknown."""
+    return Q.check(quote, "", page)[0]
 
 
 def page_for(cite, it, con):
@@ -199,6 +203,11 @@ def setup(con):
                    paper_quote, paper_cite_ok, page, lean_lines, lean_quote, lean_cite_ok, description,
                    verdict_words, model)""")
     con.execute("""CREATE TABLE IF NOT EXISTS paper_downstream (item, cited_from, part, page, line)""")
+    for table, col in (("extract_fields", "on_page"), ("extract_deltas", "paper_on_page")):
+        try:
+            con.execute(f"ALTER TABLE {table} ADD COLUMN {col}")
+        except sqlite3.OperationalError:
+            pass
 
 
 def downstream(con):
@@ -206,6 +215,13 @@ def downstream(con):
     con.execute("""INSERT INTO paper_downstream SELECT r.target, COALESCE(r.from_item, 'text of section ' ||
                    COALESCE(r.subsection, r.section)), r.from_part, r.pdf_page, r.line FROM paper_refs r
                    WHERE r.target IN (SELECT label FROM paper_items)""")
+
+
+FIELDS_INSERT = ("INSERT INTO extract_fields (pair_id, sample, side, field, text, cite, quote, cite_ok, page, model, "
+                 "on_page) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+DELTAS_INSERT = ("INSERT INTO extract_deltas (pair_id, sample, type, paper_side, lean_side, paper_cite, paper_quote, "
+                 "paper_cite_ok, page, lean_lines, lean_quote, lean_cite_ok, description, verdict_words, model, "
+                 "paper_on_page) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
 
 def store(con, pair_id, it, res, shown, paper_text):
@@ -222,29 +238,35 @@ def store(con, pair_id, it, res, shown, paper_text):
                     if not isinstance(e, dict):
                         continue
                     if side == "paper":
-                        cite, ok, page = e.get("cite"), check_paper(e.get("quote"), paper_text), page_for(e.get("cite"), it, con)
+                        cite, page = e.get("cite"), page_for(e.get("cite"), it, con)
+                        ok, on_page = check_paper(e.get("quote"), paper_text), check_paper_page(e.get("quote"), page)
                     else:
                         cite, ok, page = e.get("lines"), check_lean(e.get("quote"), e.get("lines"), shown), None
-                    con.execute("INSERT INTO extract_fields VALUES (?,?,?,?,?,?,?,?,?,?)",
-                                (pair_id, s, side, field, e.get("text"), str(cite), e.get("quote"), ok, page, tag))
-            con.execute("INSERT INTO extract_fields VALUES (?,?,?,?,?,?,?,?,?,?)",
-                        (pair_id, s, side, "proof_route", blk.get("proof_route"), None, None, None, None, tag))
+                        on_page = None
+                    con.execute(FIELDS_INSERT, (pair_id, s, side, field, e.get("text"), str(cite), e.get("quote"),
+                                                ok, page, tag, on_page))
+            # proof-route summaries carry no citation and are not verified
+            con.execute(FIELDS_INSERT, (pair_id, s, side, "proof_route", blk.get("proof_route"), None, None, None,
+                                        None, tag, None))
         for e in r.get("paper_parts_not_covered") or []:
             if isinstance(e, dict):
-                con.execute("INSERT INTO extract_fields VALUES (?,?,?,?,?,?,?,?,?,?)",
-                            (pair_id, s, "paper", "not_covered", e.get("text"), e.get("cite"), e.get("quote"),
-                             check_paper(e.get("quote"), paper_text), page_for(e.get("cite"), it, con), tag))
+                page = page_for(e.get("cite"), it, con)
+                con.execute(FIELDS_INSERT, (pair_id, s, "paper", "not_covered", e.get("text"), e.get("cite"),
+                                            e.get("quote"), check_paper(e.get("quote"), paper_text), page, tag,
+                                            check_paper_page(e.get("quote"), page)))
         for d in r.get("deltas") or []:
             if not isinstance(d, dict):
                 continue
             text = " ".join(str(d.get(k) or "") for k in ("paper_side", "lean_side", "description"))
-            con.execute("INSERT INTO extract_deltas VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            page = page_for(d.get("paper_cite"), it, con)
+            con.execute(DELTAS_INSERT,
                         (pair_id, s, d.get("type") if d.get("type") in DELTA_TYPES else f"invalid:{d.get('type')}",
                          d.get("paper_side"), d.get("lean_side"), d.get("paper_cite"), d.get("paper_quote"),
-                         check_paper(d.get("paper_quote"), paper_text), page_for(d.get("paper_cite"), it, con),
+                         check_paper(d.get("paper_quote"), paper_text), page,
                          str(d.get("lean_lines")), d.get("lean_quote"),
                          check_lean(d.get("lean_quote"), d.get("lean_lines"), shown), d.get("description"),
-                         ", ".join(sorted({w.lower() for w in VERDICT_WORDS.findall(text)})) or None, tag))
+                         ", ".join(sorted({w.lower() for w in VERDICT_WORDS.findall(text)})) or None, tag,
+                         check_paper_page(d.get("paper_quote"), page)))
 
 
 def validate(con):

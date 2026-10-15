@@ -4,8 +4,10 @@
 Differences from the 3 independent samples are GROUPED, never voted. A group holds at most one delta per
 sample, and every two members must match each other directly (same pair and type, cited Lean lines sharing
 at least one line, or, when neither cites Lean lines, the same paper location), so groups never chain.
-Each group keeps its agreement (how many of the 3 samples reported it) and every sample's wording.
-Nothing here judges whether a difference matters.
+Each group keeps `overlapping_citations` (how many of the 3 samples it contains) and every sample's wording.
+Overlap is not agreement: `agreement` is filled in only where the adjudication pass (adjudicate.py) found, in
+all 3 of its samples, that the grouped descriptions assert the same difference; single-sample groups have
+agreement 1. Nothing is voted. Nothing here judges whether a difference matters.
 
 Quotes are re-checked against the text the model was shown: a Lean quote is attributed to the file whose
 shown lines contain it (the declaration's own file first), and a paper quote of 3 characters or fewer
@@ -35,7 +37,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import config as C  # noqa: E402
 import extract as E  # noqa: E402
 import validation as V  # noqa: E402
-from report_util import lean_match_file, lines_of  # noqa: E402
+from report_util import group_deltas, group_key, lean_match_file, lines_of  # noqa: E402
 from xref_search import trivial  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -47,36 +49,6 @@ SEVERITY = ["stronger-bound", "missing-hypothesis", "different-norm", "missing-s
             "extra-hypothesis", "weaker-bound", "other"]
 RANK = {t: i for i, t in enumerate(SEVERITY)}
 SHORT_QUOTE = 3  # normalized paper quotes this short match almost anywhere
-
-
-def group_deltas(rows):
-    """rows: dicts of one pair & type, ordered by sample. Returns groups holding at most one delta per sample,
-    in which every two members match directly: cited Lean lines share at least one line (adjacent lines are
-    not merged, since a statement's hypotheses and conclusion sit on consecutive lines), or, when neither
-    cites Lean lines, the same paper citation. Each delta joins the group it overlaps most, so groups never
-    chain through a middle member."""
-    def overlap(a, b):
-        la, lb = lines_of(a["lean_lines"]), lines_of(b["lean_lines"])
-        if la and lb:
-            return max(0, min(la[1], lb[1]) - max(la[0], lb[0]) + 1)
-        if not la and not lb and (a["paper_cite"] or "").strip() == (b["paper_cite"] or "").strip():
-            return 1
-        return 0
-
-    groups = []
-    for r in rows:
-        best, best_ov = None, 0
-        for g in groups:
-            if any(m["sample"] == r["sample"] for m in g):
-                continue
-            ovs = [overlap(r, m) for m in g]
-            if min(ovs) > 0 and sum(ovs) > best_ov:
-                best, best_ov = g, sum(ovs)
-        if best is None:
-            groups.append([r])
-        else:
-            best.append(r)
-    return groups
 
 
 def quote_state(v):
@@ -106,6 +78,9 @@ def main():
         p["located_by"] = located.get((p["item"], p["decl"]), "")
 
     # ---- grouped differences ----
+    adjudicated = {}
+    if con.execute("SELECT name FROM sqlite_master WHERE name='adjudication'").fetchone():
+        adjudicated = {r[0]: r[1] for r in con.execute("SELECT group_key, yes FROM adjudication")}
     diffs = []
     for p in pairs:
         rows = [dict(r) for r in con.execute("SELECT * FROM extract_deltas WHERE pair_id=? ORDER BY sample, rowid",
@@ -123,7 +98,11 @@ def main():
                 rep = g[0]
                 ln = lines_of(rep["lean_lines"])
                 diffs.append(dict(
-                    item=p["item"], decl=p["decl"], type=t, agreement=len(samples), samples=samples,
+                    item=p["item"], decl=p["decl"], type=t, overlapping_citations=len(samples),
+                    adjudicated_same=adjudicated.get(group_key(g), "") if len(samples) > 1 else "",
+                    agreement=(1 if len(samples) == 1 else
+                               len(samples) if adjudicated.get(group_key(g)) == 3 else 0),
+                    samples=samples,
                     severity=RANK.get(t, len(SEVERITY)),
                     summary=rep["description"], paper_side=rep["paper_side"], lean_side=rep["lean_side"],
                     paper_cite=rep["paper_cite"], page=rep["page"], paper_quote=rep["paper_quote"],
@@ -218,7 +197,10 @@ def main():
                                          "delta_types_3of3", "delta_types_any", "n_differences", "n_agreed_3of3",
                                          "top_difference", "downstream_uses", "samples_valid", "def_depth",
                                          "def_chain", "file_axiom_sorry_admit_native_decide_unsafe"])
-    write_csv("differences.csv", diffs, ["item", "decl", "located_by", "type", "agreement", "summary", "paper_side",
+    for d in diffs:
+        d["agreement_csv"] = d["agreement"] or ""
+    write_csv("differences.csv", diffs, ["item", "decl", "located_by", "type", "overlapping_citations",
+                                         "adjudicated_same", "agreement_csv", "summary", "paper_side",
                                          "lean_side",
                                          "paper_cite", "page", "paper_quote", "paper_quote_verified", "lean_file",
                                          "lean_lines", "lean_quote", "lean_quote_verified", "verdict_words", "all_wordings"])
@@ -245,7 +227,8 @@ def main():
     write_html(table, diffs, unmatched, orphans, gate, vres, repo_commit, downstream_where, items, pilot_files)
     write_shortlist(diffs, gate, repo_commit, items)
     write_summary(table, diffs, lean_map, unmatched, orphans, gate, vres, repo_commit, pilot_files, con)
-    print(f"pairs={len(table)} differences={len(diffs)} (3/3: {sum(d['agreement'] == 3 for d in diffs)}) "
+    print(f"pairs={len(table)} differences={len(diffs)} (3/3 confirmed: {sum(d['agreement'] == 3 for d in diffs)}, "
+          f"3/3 overlapping: {sum(d['overlapping_citations'] == 3 for d in diffs)}) "
           f"unmatched_items={len(unmatched)} orphan_theorems={len(orphans)} -> {OUT}")
 
 
@@ -272,7 +255,8 @@ def write_shortlist(diffs, gate, commit, items):
            "and the method is in `METHODOLOGY.md`.", "",
            *([C.REPORT["target_note"], ""] if C.REPORT.get("target_note") else []),
            "## Part A: differences in what is estimated", "",
-           "Every difference that all 3 samples reported as stronger-bound, weaker-bound or missing-supremum"
+           "Every difference that all 3 samples reported (citing overlapping Lean lines, and confirmed the same "
+           "difference by all 3 adjudication samples) as stronger-bound, weaker-bound or missing-supremum"
            + (", plus the known discrepancies used to validate the tool (marked **validation**)." if gate else ".")
            , ""]
 
@@ -282,7 +266,8 @@ def write_shortlist(diffs, gate, commit, items):
                if ln else f"{REPO_URL}/{commit}/{d['lean_file']}")
         tag = " · **validation**" if id(d) in gate_ids else ""
         return [f"## {k}. {d['item']} · `{d['decl'].split('.', 1)[-1]}`{tag}", "",
-                f"- **Type:** {d['type']} · reported by {d['agreement']}/3 samples · "
+                f"- **Type:** {d['type']} · reported by {d['overlapping_citations']}/3 samples, confirmed the same "
+                f"difference by {d['adjudicated_same'] if d['adjudicated_same'] != '' else 'n/a'}/3 adjudication samples · "
                 f"declaration located by {d['located_by'] or 'n/a'}",
                 f"- **Difference:** {d['summary']}",
                 f"- **Paper** ([p.{d['page']}]({PAPER_URL}#page={d['page']}), {d['paper_cite']}): {d['paper_side']}",
@@ -295,7 +280,8 @@ def write_shortlist(diffs, gate, commit, items):
         k += 1
         out += entry(k, d)
     out += ["## Part B: differences in how size is measured", "",
-            "Every difference that all 3 samples reported as different-norm. Most of these are the Lean writing a "
+            "Every difference that all 3 samples reported as different-norm (overlapping citations, confirmed by "
+            "adjudication). Most of these are the Lean writing a "
             "norm or function class another way (for example a C^m norm as a bound on iterated derivatives). "
             "They're here because the rule picks them up, not because anyone has judged them to matter.", ""]
     for d in tier_b:
@@ -341,7 +327,9 @@ def write_summary(table, diffs, lean_map, unmatched, orphans, gate, vres, commit
            f"(results and proof steps together). A decoy test suggests at least 1 in 10 confident matches could be wrong.",
            f"- **Compared in detail:** {len(table)} (paper result or proof step, Lean declaration) pairs from the "
            f"{C.REPORT.get('pilot_label', 'pilot')} pilot, Lemma 10.5 and selected proof steps.",
-           f"- **Differences:** {len(diffs):,} grouped, {n3} of them reported by all 3 samples. Most are naming, or "
+           f"- **Differences:** {len(diffs):,} grouped. {sum(d['overlapping_citations'] == 3 for d in diffs)} have "
+           f"overlapping citations from all 3 samples; {n3} of those were confirmed by adjudication to describe the "
+           "same difference. Most are naming, or "
            "the Lean spelling out conditions the paper leaves implicit.",
            f"- **Validation:** {sum(r['k'] == 3 for r in vres)} of {len(vres)} published discrepancies reported "
            "by all 3 samples at the expected Lean lines; the same check fires on "
@@ -379,7 +367,9 @@ def write_summary(table, diffs, lean_map, unmatched, orphans, gate, vres, commit
                        f"({c['pairs_fired']} of {c['pairs']} pairs).")
             for d in gate:
                 if d["item"] == v["item"]:
-                    out.append(f"  - {d['agreement']}/3 · {md_lean(commit, d['lean_file'], d['lean_lines'])}: "
+                    out.append(f"  - {d['overlapping_citations']}/3 overlapping, adjudicated "
+                               f"{d['adjudicated_same'] if d['adjudicated_same'] != '' else 'n/a'}/3 · "
+                               f"{md_lean(commit, d['lean_file'], d['lean_lines'])}: "
                                f"{md(d['summary'])}")
         out.append("")
 
@@ -388,17 +378,22 @@ def write_summary(table, diffs, lean_map, unmatched, orphans, gate, vres, commit
         by_type[d["type"]][d["agreement"]] += 1
     out += ["## Differences by type", "",
             "Types always read from the paper towards the Lean, e.g. `stronger-bound` means the paper states a "
-            "stronger estimate than the Lean proves. Ordered roughly by how much they could matter.", "",
-            "| Type | All 3 samples | 2 of 3 | 1 of 3 | Total |", "|---|--:|--:|--:|--:|"]
+            "stronger estimate than the Lean proves. Ordered roughly by how much they could matter. A group counts as "
+            "3 or 2 of 3 only when the adjudication pass confirmed, in all 3 of its samples, that its descriptions "
+            "say the same thing; groups whose citations overlap but were not confirmed are counted separately.", "",
+            "| Type | All 3 samples | 2 of 3 | 1 of 3 | Overlap, not confirmed | Total |",
+            "|---|--:|--:|--:|--:|--:|"]
     for t in SEVERITY:
         if by_type[t]:
             c = by_type[t]
-            out.append(f"| `{t}` | {c[3]} | {c[2]} | {c[1]} | {sum(c.values())} |")
+            out.append(f"| `{t}` | {c[3]} | {c[2]} | {c[1]} | {c[0]} | {sum(c.values())} |")
     out += [f"| **Total** | **{n3}** | **{sum(d['agreement'] == 2 for d in diffs)}** | "
-            f"**{sum(d['agreement'] == 1 for d in diffs)}** | **{len(diffs)}** |", ""]
+            f"**{sum(d['agreement'] == 1 for d in diffs)}** | **{sum(d['agreement'] == 0 for d in diffs)}** | "
+            f"**{len(diffs)}** |", ""]
 
     out += ["## Pairs compared", "",
-            "Most severe difference first. *Agreed* counts differences reported by all 3 samples. *Main path*: the "
+            "Most severe difference first. *Agreed* counts differences reported by all 3 samples and confirmed the "
+            "same difference by all 3 adjudication samples. *Main path*: the "
             "declaration is on the detected dependency path of the main theorems read from the source, so it can miss real uses and include spurious ones; \"not found\" doesn't mean unused. "
             "*Located by*: how many of the 3 samples named this declaration when matching. "
             "*Depth*: layers of the formalization's own definitions under the statement.", "",
@@ -473,7 +468,8 @@ def write_html(table, diffs, unmatched, orphans, gate, vres, commit, downstream_
             det.append(
                 f'<tr class="d" data-type="{esc(d["type"])}" data-agree="{d["agreement"]}">'
                 f'<td><span class="t t-{esc(d["type"])}">{esc(d["type"])}</span></td>'
-                f'<td class="ag ag{d["agreement"]}">{d["agreement"]}/3</td>'
+                f'<td class="ag ag{d["agreement"]}">{d["agreement"] or "unconfirmed"}{"/3" if d["agreement"] else ""}'
+                f'<div class="sub">overlap {d["overlapping_citations"]}/3</div></td>'
                 f'<td>{esc(d["summary"])}<details><summary>sides, quotes, all wordings</summary>'
                 f'<p><b>Paper:</b> {esc(d["paper_side"])}<br><b>Lean:</b> {esc(d["lean_side"])}</p>'
                 f'<p><b>Paper quote</b> ({paper_link(d["page"], d["paper_cite"])}'
@@ -550,10 +546,11 @@ Paper: <a href="{PAPER_URL}">{esc(C.PDF.name)}</a> · Lean: {esc(C.REPO_LABEL)} 
 {gate_card}
 
 <h2>Pairs (paper item × Lean declaration), most severe first</h2>
-<p class="lead">Severity order: {", ".join(SEVERITY)}. "Agreed" = reported by all 3 samples at the same Lean lines.
+<p class="lead">Severity order: {", ".join(SEVERITY)}. "Agreed" = reported by all 3 samples at overlapping Lean lines and
+confirmed the same difference by all 3 adjudication samples; "overlap" = samples citing overlapping lines.
 Downstream uses = places the paper cites the item (hover for the list).</p>
 <div class="filters card">Show differences of type: {type_btns}<br>
-<label><input type="checkbox" id="only3"> only differences reported by all 3 samples</label></div>
+<label><input type="checkbox" id="only3"> only differences reported by all 3 samples and confirmed</label></div>
 <div class="wrap"><table>
 <thead><tr><th>Paper item</th><th>Lean declaration</th><th>Most severe agreed difference</th><th class="num">agreed / all</th>
 <th class="num">uses</th></tr></thead>

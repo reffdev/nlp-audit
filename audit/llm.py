@@ -22,6 +22,7 @@ from openai import OpenAI
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "llm_raw.jsonl"
+PROMPTS_LOG = ROOT / "data" / "llm_prompts.jsonl"  # full prompt text, once per cache key
 _lock = threading.Lock()
 _cache = None
 _last_finish = {}
@@ -86,11 +87,36 @@ def _one(c, model, key, s, system, user, temperature, max_tokens, tag):
     return rec.get("parsed")
 
 
+_prompts_lock = threading.Lock()
+_prompts_seen = None
+
+
+def _log_prompt(key, model, system, user, tag):
+    """Full prompt text, once per cache key, in PROMPTS_LOG (the raw log stores only the key)."""
+    global _prompts_seen
+    with _prompts_lock:
+        if _prompts_seen is None:
+            _prompts_seen = set()
+            if PROMPTS_LOG.exists():
+                for line in PROMPTS_LOG.open(encoding="utf-8"):
+                    try:
+                        _prompts_seen.add(json.loads(line)["key"])
+                    except (ValueError, KeyError):
+                        pass
+        if key in _prompts_seen:
+            return
+        _prompts_seen.add(key)
+        with PROMPTS_LOG.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(dict(key=key, model=model, thinking=THINKING, tag=tag, system=system, user=user),
+                               ensure_ascii=False) + "\n")
+
+
 def complete_json(system, user, samples=3, temperature=0.7, max_tokens=24000, tag=""):
     """Return a list of `samples` parsed JSON objects (None where parsing failed), one per sample.
     max_tokens covers reasoning ("thinking") tokens too on reasoning models."""
     c, model = client()
     key = hashlib.sha256(f"{model}\nthinking={THINKING}\n{system}\n{user}".encode()).hexdigest()[:16]
+    _log_prompt(key, model, system, user, tag)
     def run(s):
         out = _one(c, model, key, s, system, user, temperature, max_tokens, tag)
         if out is None and _last_finish.get((key, s)) == "length":
