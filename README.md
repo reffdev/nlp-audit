@@ -1,5 +1,13 @@
 # Navier–Stokes: Natural-Language Proof vs Lean
 
+> **Corrections in progress (October 2026).** An adversarial review of v0.1 found problems that affect its results:
+>
+> - **Paper text was cut short in some prompts.** Page-boundary handling in the OCR step ended some proofs early, and those shorter OCR proofs were preferred over the full text, so some comparison prompts were missing parts of the proof (worst case: Lemma 10.5, about 900 of 7,100 characters).
+> - **The paper-quote check ignored LaTeX commands**, so, for example, `\le` and `\ge` were not told apart.
+> - **"Reported by all 3 samples" counts overlapping citations, not checked agreement.** Differences were grouped by the Lean lines they cite, without checking that they say the same thing.
+>
+> A corrected rerun is in progress. The paper-to-Lean map and the static checks are unaffected in method but will be rerun. The (8.10) observation stands, but it should have credited Bastounis, Circelli and Hansen's Remark 3.2, which already traces the extra derivative to the series in `coefficient_seminorm_bound`; what is added here is only the link to (8.10) through the l = 1 case.
+
 **v0.1 - preliminary, unreviewed**
 
 An attempt to audit, at scale, where OpenAI's Navier–Stokes paper and its Lean formalization differ.
