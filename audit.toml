@@ -45,19 +45,23 @@ Lemma 8.6 (the paper loses m+4 derivatives, the Lean m+5) and eq. (10.19) inside
 pressure-flux bound has a different first term). Lemma 8.6 and Lemma 10.5 were put on the target list because of \
 that paper; no prompt mentions the discrepancies, the lemma, derivative counts or the bound."""
 
-# Validation targets: differences known in advance that the extraction should report. Each entry names a
-# paper item, optionally restricts the difference types, and lists patterns that must all match the
-# wording of a reported difference. Matching entries are marked "validation" in the shortlist and report,
-# and `python audit/extract.py --validate` checks them. Delete these entries for a paper with no known
-# discrepancies.
+# Validation targets: discrepancies known in advance that the extraction should report. Each entry names the
+# paper item, the Lean declaration, the Lean lines of the expression the known discrepancy is about (taken
+# from the source, not from model output), and the difference types that count. A sample hits the target
+# when it reported a difference of one of those types citing those lines; validation.py counts hits per
+# sample and runs the same check over every other pair as a control. Matching groups are marked
+# "validation" in the shortlist and report, and `python audit/extract.py --validate` prints the result.
+# Delete these entries for a paper with no known discrepancies.
 [[validation]]
 label = "Lemma 8.6: the paper loses m+4 derivatives, the Lean m+5"
 item = "Lemma 8.6"
+decl = "NavierStokes.SmoothFamilyTorusInverse.inverse_finiteJets"
+lines = "868"  # JetBound f S (n + 5) C
 types = ["stronger-bound"]
-patterns = ['four|\b4\b|\+\s*4', 'five|\b5\b|\+\s*5']
 
 [[validation]]
 label = "(10.19) in the proof of Lemma 10.5: the first term of the pressure-flux bound has a different form"
 item = "(10.19) in proof of Lemma 10.5"
-types = ["stronger-bound", "weaker-bound", "different-norm", "other"]
-patterns = ['A_R|A\s*/\s*R|1\s*/\s*R\s*\^?\s*2|R\^\{?-2|first (term|part)|algebraic (form|structure)|\(B_R\s*\+\s*1\)']
+decl = "NavierStokesR3.PressureFlux.exists_uniform_actual_pressure_flux_bound"
+lines = "587-588"  # the first term of the bound: (cutoffL6^(1/2) + 1) * (dissipationRoot / R + 1 / R^2)
+types = ["stronger-bound", "weaker-bound", "other"]

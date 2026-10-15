@@ -9,7 +9,7 @@ Paper: [navier-stokes.pdf](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82
 - **Paper → Lean map:** 77 of 80 numbered results matched by all 3 samples; 4 targets without a 3-of-3 match (results and proof steps together). A decoy test suggests at least 1 in 10 confident matches could be wrong.
 - **Compared in detail:** 58 (paper result or proof step, Lean declaration) pairs from the Section 8 pilot, Lemma 10.5 and selected proof steps.
 - **Differences:** 1,546 grouped, 422 of them reported by all 3 samples. Most are naming, or the Lean spelling out conditions the paper leaves implicit.
-- **Validation:** 2 of 2 published discrepancies reported by all 3 samples (see below).
+- **Validation:** 2 of 2 published discrepancies reported by all 3 samples at the expected Lean lines; the same check fires on 42% or less of other places (see below).
 - **Static checks** (source text only, nothing compiled): 0 uses of `sorry`, `axiom`, `admit`, `native_decide` or `unsafe` in the 816 files under `NavierStokes/`; 474 theorems are copies of each other in 187 groups (57 copies unreferenced). See [duplicate_statements.csv](duplicate_statements.csv).
 - **Start with** [review_shortlist.md](review_shortlist.md): the differences most worth an expert's time.
 
@@ -17,9 +17,14 @@ Paper: [navier-stokes.pdf](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82
 
 The two discrepancies Bastounis, Circelli and Hansen published ([arXiv:2610.08144](https://arxiv.org/abs/2610.08144)). These results were put on the target list because of that paper; the prompts never describe the discrepancies.
 
-- **Lemma 8.6** · `SmoothFamilyTorusInverse.inverse_finiteJets` · 3/3 samples · [(8.19), p.95](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf#page=95) · [SmoothFamilyTorusInverse.lean:868](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/SmoothFamilyTorusInverse.lean#L868): The paper loses four derivatives, while the Lean declaration loses five.
-- **(10.19) in proof of Lemma 10.5** · `PressureFlux.exists_uniform_actual_pressure_flux_bound` · 3/3 samples · [(10.19), p.123](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf#page=123) · [R3/PressureFlux.lean:587-588](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/R3/PressureFlux.lean#L587-L588): The algebraic structure of the first part of the bound differs between the two statements.
-- **(10.19) in proof of Lemma 10.5** · `PressureFlux.exists_uniform_actual_pressure_flux_bound` · 2/3 samples · [(10.19), p.123](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf#page=123) · [R3/PressureFlux.lean:588](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/R3/PressureFlux.lean#L588): The Lean bound includes additional terms not displayed in the paper's estimate.
+Each target is a place, not a wording: the Lean declaration, the lines of the expression the discrepancy is about, and the difference types that count. A sample hits it if it reported a difference of one of those types citing those lines. The control runs the same check over the statements of every other pair compared, to show how often it fires by chance.
+
+- **Lemma 8.6** · `SmoothFamilyTorusInverse.inverse_finiteJets` · [SmoothFamilyTorusInverse.lean:868](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/SmoothFamilyTorusInverse.lean#L868) · stronger-bound: **3 of 3 samples**. Control: fires on 0.4% of 521 windows over the other 57 pairs' statements (2 of 57 pairs).
+  - 3/3 · [SmoothFamilyTorusInverse.lean:868](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/SmoothFamilyTorusInverse.lean#L868): The paper loses four derivatives, while the Lean declaration loses five.
+- **(10.19) in proof of Lemma 10.5** · `PressureFlux.exists_uniform_actual_pressure_flux_bound` · [R3/PressureFlux.lean:587-588](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/R3/PressureFlux.lean#L587-L588) · stronger-bound / weaker-bound / other: **3 of 3 samples**. Control: fires on 41.9% of 454 windows over the other 57 pairs' statements (54 of 57 pairs).
+  - 3/3 · [R3/PressureFlux.lean:587-588](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/R3/PressureFlux.lean#L587-L588): The algebraic structure of the first part of the bound differs between the two statements.
+  - 2/3 · [R3/PressureFlux.lean:588](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/R3/PressureFlux.lean#L588): The Lean bound includes additional terms not displayed in the paper's estimate.
+  - 1/3 · [R3/PressureFlux.lean:587-588](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/R3/PressureFlux.lean#L587-L588): The leading R^{-1} terms are expressed with different quantities and different products.
 
 ## Differences by type
 

@@ -82,10 +82,3 @@ def repo_commit():
             return r.stdout.strip()
     return LEAN["commit"]
 
-
-def validation_patterns():
-    """[(entry, compiled patterns, allowed types or None)] for the configured validation targets."""
-    out = []
-    for v in VALIDATION:
-        out.append((v, [re.compile(p, re.I) for p in v["patterns"]], set(v.get("types") or []) or None))
-    return out

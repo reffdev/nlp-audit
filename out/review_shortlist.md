@@ -80,20 +80,11 @@ Every difference that all 3 samples reported as stronger-bound, weaker-bound or 
 - **Lean** ([R3/PressureFlux.lean:587-588](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/R3/PressureFlux.lean#L587-L588)): Lean has ((cutoffL6^{1/2}+1)*(dissipationRoot/R+1/R^2)).
   - quote: `(cutoffL6 (ComparisonCutoffs.cutoff R) (u - v) t ^ (1 / 2 : ℝ) + 1) *`
 
-## 9. (10.19) in proof of Lemma 10.5 · `PressureFlux.exists_uniform_actual_pressure_flux_bound` · **validation**
-
-- **Type:** other · reported by 2/3 samples · declaration located by 3/3
-- **Difference:** The Lean bound includes additional terms not displayed in the paper's estimate.
-- **Paper** ([p.123](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf#page=123), (10.19)): The paper's displayed RHS does not contain dissipationRoot/R or 1/R^2 terms.
-  - quote: `\left[ (B_R + 1) B_R^{1/2} + R^{-3/4} B_R^{3/4} \right]`
-- **Lean** ([R3/PressureFlux.lean:588](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/R3/PressureFlux.lean#L588)): Lean's RHS contains dissipationRoot/R and 1/R^2.
-  - quote: `(dissipationRoot (ComparisonCutoffs.cutoff R) (u - v) t / R + 1 / R ^ 2)`
-
 ## Part B: differences in how size is measured
 
 Every difference that all 3 samples reported as different-norm. Most of these are the Lean writing a norm or function class another way (for example a C^m norm as a bound on iterated derivatives). They're here because the rule picks them up, not because anyone has judged them to matter.
 
-## 10. (10.19) in proof of Lemma 10.5 · `PressureFlux.exists_uniform_actual_pressure_flux_bound`
+## 9. (10.19) in proof of Lemma 10.5 · `PressureFlux.exists_uniform_actual_pressure_flux_bound`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 3/3
 - **Difference:** The paper measures the relevant size by B_R, while Lean measures it by cutoffL6 and dissipationRoot.
@@ -102,7 +93,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([R3/PressureFlux.lean:587-589](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/R3/PressureFlux.lean#L587-L589)): Lean's RHS uses cutoffL6 and dissipationRoot.
   - quote: `cutoffL6 (ComparisonCutoffs.cutoff R) (u - v) t ^ (1 / 2 : ℝ)`
 
-## 11. (8.10) in proof of Lemma 8.2 · `FourierAlias.cutoffAlias_arbitrary_order`
+## 10. (8.10) in proof of Lemma 8.2 · `FourierAlias.cutoffAlias_arbitrary_order`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 3/3
 - **Difference:** The two sides measure size with different norms and different objects.
@@ -111,7 +102,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([FourierAlias.lean:566](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/FourierAlias.lean#L566)): The left side is the norm of the iterated Frechet derivative of cutoffAlias at a state point.
   - quote: `‖iteratedFDeriv ℝ j (cutoffAlias χ M (vector d) f) z‖`
 
-## 12. (8.10) in proof of Lemma 8.2 · `ParametricTorusInverse.mixedJet_inverse_bound`
+## 11. (8.10) in proof of Lemma 8.2 · `ParametricTorusInverse.mixedJet_inverse_bound`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 3/3
 - **Difference:** The paper uses function norms, while the Lean conclusion is a pointwise norm of a mixed jet value.
@@ -120,7 +111,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([ParametricTorusInverse.lean:664](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/ParametricTorusInverse.lean#L664)): The Lean statement measures the complex value mixedJet q w (inverse d f) (p,Y) and compares it to a constant times C.
   - quote: `‖mixedJet q w (inverse d f) (p, Y)‖ ≤ mixedLossConstant w.length * C`
 
-## 13. (8.10) in proof of Lemma 8.2 · `ParametricTorusInverse.mixedJet_inverse_bound`
+## 12. (8.10) in proof of Lemma 8.2 · `ParametricTorusInverse.mixedJet_inverse_bound`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 3/3
 - **Difference:** The paper uses a full function norm, while the Lean hypotheses are separate top-order pure derivative bounds.
@@ -129,7 +120,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([ParametricTorusInverse.lean:659](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/ParametricTorusInverse.lean#L659)): Lean assumes pure x and swapped-x jets of order w.length+5 are bounded by C.
   - quote: `‖SmoothFourierData.xJet (w.length + 5) (slice (parameterJet q f) p) (x, y)‖ ≤ C`
 
-## 14. (8.10) in proof of Lemma 8.2 · `SmoothFamilyTorusInverse.inverse_finiteJets`
+## 13. (8.10) in proof of Lemma 8.2 · `SmoothFamilyTorusInverse.inverse_finiteJets`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 2/3
 - **Difference:** The paper measures size with torus C^m norms; Lean measures size with full joint Fréchet-jet bounds.
@@ -138,7 +129,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([SmoothFamilyTorusInverse.lean:653](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/SmoothFamilyTorusInverse.lean#L653)): The Lean statement uses JetBound with iteratedFDeriv norms.
   - quote: `∀ j ≤ n, ∀ p ∈ S, ∀ Y, ‖iteratedFDeriv ℝ j f (p, Y)‖ ≤ C`
 
-## 15. (8.10) in proof of Lemma 8.2 · `UniformFourierAlias.realInverse_finiteJets`
+## 14. (8.10) in proof of Lemma 8.2 · `UniformFourierAlias.realInverse_finiteJets`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 2/3
 - **Difference:** The paper states a C^k norm estimate; the Lean statement gives pointwise bounds on each iterated derivative.
@@ -147,7 +138,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([UniformFourierAlias.lean:615](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/UniformFourierAlias.lean#L615)): The Lean statement bounds individual iteratedFDeriv norms by a common constant.
   - quote: `‖iteratedFDeriv ℝ j (realInverse d f) (p, Y)‖ ≤ K * C`
 
-## 16. (8.9) in proof of Lemma 8.2 · `PhysicalMeanDomain.transport_compact_finiteJets_fiber`
+## 15. (8.9) in proof of Lemma 8.2 · `PhysicalMeanDomain.transport_compact_finiteJets_fiber`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 3/3
 - **Difference:** The paper statement is scalar-valued, while the Lean statement is stated for a normed vector-valued function and measures size by a norm.
@@ -159,7 +150,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
       (∀ j : ℕ, j ≤ m → ∀ X ∈ Ioo a b, ∀ Y : PressureStream.Plane,
         ‖iteratedFDeriv ℝ j f (X, (s, Y))‖ ≤ A * logWeight cL cR a b p X)`
 
-## 17. Lemma 10.5 · `WholeSpaceUniqueness.candidate_unique_on_Icc`
+## 16. Lemma 10.5 · `WholeSpaceUniqueness.candidate_unique_on_Icc`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 3/3
 - **Difference:** The paper uses an L-infinity-in-time L^2 function-class bound, while Lean uses the defined UniformFiniteEnergy condition, which requires square integrability at each time and a uniform kinetic-energy bound.
@@ -168,7 +159,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([R3/WholeSpaceUniqueness.lean:77](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/R3/WholeSpaceUniqueness.lean#L77)): v satisfies UniformFiniteEnergy on Icc 0 T.
   - quote: `(hev : UniformFiniteEnergy (Icc (0 : ℝ) T) v)`
 
-## 18. Lemma 8.6 · `SmoothFamilyTorusInverse.inverse_finiteJets`
+## 17. Lemma 8.6 · `SmoothFamilyTorusInverse.inverse_finiteJets`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 3/3
 - **Difference:** The paper's norm is written as a C_y norm, while Lean's JetBound is a full joint Fréchet-jet bound on a parameter set.
@@ -177,7 +168,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([SmoothFamilyTorusInverse.lean:653](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/SmoothFamilyTorusInverse.lean#L653)): Lean uses JetBound, a bound on iterated Fréchet derivatives up to order n over p in S and all Y.
   - quote: `∀ j ≤ n, ∀ p ∈ S, ∀ Y, ‖iteratedFDeriv ℝ j f (p, Y)‖ ≤ C`
 
-## 19. Lemma 8.7 · `PositiveOrderMoments.exists_parameterized_exact_repair`
+## 18. Lemma 8.7 · `PositiveOrderMoments.exists_parameterized_exact_repair`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 2/3
 - **Difference:** The paper measures regularity with S_alpha/M_alpha classes, while the Lean statement uses C^∞ smoothness on univ ×ˢ S.
@@ -186,7 +177,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([PositiveOrderMoments.lean:926](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/PositiveOrderMoments.lean#L926)): The Lean statement uses ContDiffOn ℝ ∞ smoothness.
   - quote: `ContDiffOn ℝ ∞ du (univ ×ˢ S) ∧ ContDiffOn ℝ ∞ de (univ ×ˢ S)`
 
-## 20. Lemma 8.8 · `DefectIncrementBounds.actualRadialError_mem`
+## 19. Lemma 8.8 · `DefectIncrementBounds.actualRadialError_mem`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 3/3
 - **Difference:** The paper uses the class M; the Lean declaration uses MeanClass, which is defined as MemClass with weight s.zeta.
@@ -195,7 +186,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([DefectIncrementBounds.lean:439](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/DefectIncrementBounds.lean#L439)): The Lean declaration concludes MeanClass s (H + 9/10 - 2κ) (actualRadialError o base m h W).
   - quote: `MeanClass s (H + 9 / 10 - 2 * κ) (actualRadialError o base m h W)`
 
-## 21. Lemma 8.8 · `DefectIncrementBounds.defects_after_rank_mem`
+## 20. Lemma 8.8 · `DefectIncrementBounds.defects_after_rank_mem`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 3/3
 - **Difference:** The paper uses the symbol S for the target class, while the Lean statement uses an unweighted slow-strip MemClass.
@@ -204,7 +195,7 @@ Every difference that all 3 samples reported as different-norm. Most of these ar
 - **Lean** ([DefectIncrementBounds.lean:569-570](https://github.com/openai/NavierStokesAndEuler/blob/f9e8bc5b38b6e212696e8a30e3e91517af887bbd/NavierStokes/DefectIncrementBounds.lean#L569-L570)): The i-th updated defect is stated to belong to UnweightedClass slowStripData with exponent H + 9/10 - 2*kappa.
   - quote: `UnweightedClass (MeanMomentBounds.slowStripData (D := P) ε S hε hεone hS) (H + 9 / 10 - 2 * κ)`
 
-## 22. Lemma 8.8 · `DefectIncrementBounds.rankStage_defect_class`
+## 21. Lemma 8.8 · `DefectIncrementBounds.rankStage_defect_class`
 
 - **Type:** different-norm · reported by 3/3 samples · declaration located by 3/3
 - **Difference:** The paper uses S-class notation for the defect triple; Lean uses an explicit unweighted slow-strip class for a debt component.

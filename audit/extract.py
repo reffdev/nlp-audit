@@ -244,29 +244,19 @@ def store(con, pair_id, it, res, shown, paper_text):
 
 
 def validate(con):
-    """Check the validation targets in audit.toml ([[validation]]): for each, did any sample report a
-    difference whose wording matches every pattern (and, if given, one of the allowed types)?"""
-    ok = True
+    """Check the validation targets in audit.toml ([[validation]]) by location and type (validation.py):
+    how many samples reported a difference of an allowed type at the target's Lean lines, against how often
+    the same check fires elsewhere."""
+    import validation as V
     if not C.VALIDATION:
         print("no validation targets configured")
         return True
-    for v, pats, types in C.validation_patterns():
-        rows = con.execute("""SELECT p.decl, d.sample, d.type, d.paper_side, d.lean_side, d.description, d.lean_lines
-                              FROM extract_deltas d JOIN extract_pairs p ON p.pair_id = d.pair_id
-                              WHERE p.item = ?""", (v["item"],)).fetchall()
-        print(v.get("label", v["item"]))
-        if not rows:
-            print(f"  {v['item']}: no extraction yet")
-            ok = False
-            continue
-        hits = [r for r in rows if (not types or r[2] in types)
-                and all(p.search(" ".join(map(str, r[3:6]))) for p in pats)]
-        print(f"  {v['item']}: {len(rows)} deltas over all its pairs; {len(hits)} match")
-        for decl in sorted({r[0] for r in hits}):
-            print(f"    {decl}: samples {sorted({r[1] for r in hits if r[0] == decl})} of 0-2")
-            for r in [h for h in hits if h[0] == decl][:3]:
-                print(f"      [{r[2]}] lines {r[6]}: {r[5]}")
-        ok = ok and bool(hits)
+    ok = True
+    for r in V.check_all(con):
+        print(V.describe(r))
+        for d in r["hits"]:
+            print(f"    sample {d['sample']} [{d['type']}] lines {d['lean_lines']}: {d['description']}")
+        ok = ok and r["k"] > 0
     return ok
 
 

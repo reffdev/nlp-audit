@@ -15,6 +15,8 @@ Outputs (out/):
   paper_lean_map.csv                       one row per located target: paper result or proof step -> Lean declaration
   audit_table.csv                          one row per (paper item, Lean declaration) pair
   differences.csv                          one row per grouped difference
+  (located_by, in both: how many of the 3 locating samples named this pair's declaration for its paper item; a
+   target can have several declarations named by all 3, so it is not the same as being the map's one found_decl)
   paper_items_not_matched.csv              paper items without a confident Lean counterpart (all sections)
   lean_theorems_without_paper_counterpart.csv  theorems in the pilot files not located for any paper item
   report.html                              everything above on one static page
@@ -32,6 +34,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 import config as C  # noqa: E402
 import extract as E  # noqa: E402
+import validation as V  # noqa: E402
+from report_util import lean_match_file, lines_of  # noqa: E402
 from xref_search import trivial  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -43,11 +47,6 @@ SEVERITY = ["stronger-bound", "missing-hypothesis", "different-norm", "missing-s
             "extra-hypothesis", "weaker-bound", "other"]
 RANK = {t: i for i, t in enumerate(SEVERITY)}
 SHORT_QUOTE = 3  # normalized paper quotes this short match almost anywhere
-
-
-def lines_of(s):
-    m = re.match(r"\s*(\d+)\s*(?:-\s*(\d+))?", str(s or ""))
-    return (int(m.group(1)), int(m.group(2) or m.group(1))) if m else None
 
 
 def group_deltas(rows):
@@ -78,22 +77,6 @@ def group_deltas(rows):
         else:
             best.append(r)
     return groups
-
-
-def lean_match_file(quote, lines, shown, decl_file):
-    """The file whose shown lines contain the Lean quote at the cited line numbers (extract.check_lean's
-    test), preferring the declaration's own file; None if no shown range contains it."""
-    ln = lines_of(lines)
-    if not ln or not quote:
-        return None
-    q = re.sub(r"\s+", "", quote)
-    hits = []
-    for f, x, y in shown:
-        if x <= ln[0] <= y or x <= ln[1] <= y:
-            src = (C.REPO / f).read_text(encoding="utf-8").splitlines()
-            if q in re.sub(r"\s+", "", "".join(src[max(ln[0], x) - 1:min(ln[1], y)])):
-                hits.append(f)
-    return decl_file if decl_file in hits else (hits[0] if hits else None)
 
 
 def quote_state(v):
@@ -249,13 +232,19 @@ def main():
               ["lean_decl", "location", "used_by_other_files", "on_main_proof_path", "docstring"])
 
     # ---- HTML ----
-    gate = []  # differences that reproduce the validation targets in audit.toml
-    for v, pats, types in C.validation_patterns():
-        gate += [d for d in diffs if d["item"] == v["item"] and (not types or d["type"] in types)
-                 and all(p.search(" ".join(d["all_wordings"])) for p in pats)]
-    write_html(table, diffs, unmatched, orphans, gate, repo_commit, downstream_where, items, pilot_files)
+    # validation targets (audit.toml): counted per sample by validation.py, by location and type; the
+    # grouped differences at a target's lines are marked "validation" for display only
+    vres = V.check_all(con)
+    con.row_factory = sqlite3.Row
+    gate = []
+    for v in C.VALIDATION:
+        tl = lines_of(v["lines"])
+        gate += [d for d in diffs if d["item"] == v["item"] and d["decl"] == v["decl"] and d["type"] in v["types"]
+                 and lines_of(d["lean_lines"]) and lines_of(d["lean_lines"])[0] <= tl[1]
+                 and tl[0] <= lines_of(d["lean_lines"])[1]]
+    write_html(table, diffs, unmatched, orphans, gate, vres, repo_commit, downstream_where, items, pilot_files)
     write_shortlist(diffs, gate, repo_commit, items)
-    write_summary(table, diffs, lean_map, unmatched, orphans, gate, repo_commit, pilot_files, con)
+    write_summary(table, diffs, lean_map, unmatched, orphans, gate, vres, repo_commit, pilot_files, con)
     print(f"pairs={len(table)} differences={len(diffs)} (3/3: {sum(d['agreement'] == 3 for d in diffs)}) "
           f"unmatched_items={len(unmatched)} orphan_theorems={len(orphans)} -> {OUT}")
 
@@ -270,7 +259,7 @@ def write_shortlist(diffs, gate, commit, items):
     differences are left to the full tables."""
     picked = [d for d in diffs if d["agreement"] == 3 and d["type"] in SHORTLIST_TYPES]
     for g in gate:
-        if g not in picked:
+        if g not in picked and g["agreement"] == 3:  # the shortlist only lists what all 3 samples reported
             picked.append(g)
     picked.sort(key=lambda d: (d["severity"], d["item"], d["decl"]))
     tier_b = [d for d in diffs if d["agreement"] == 3 and d["type"] in SHORTLIST_TIER_B and d not in picked]
@@ -334,7 +323,7 @@ def md_paper(page, label):
     return f"[{md(label)}, p.{page}]({PAPER_URL}#page={page})" if page else md(label)
 
 
-def write_summary(table, diffs, lean_map, unmatched, orphans, gate, commit, pilot_files, con):
+def write_summary(table, diffs, lean_map, unmatched, orphans, gate, vres, commit, pilot_files, con):
     """out/summary.md: the report in a form GitHub renders, for a first look before the CSVs and report.html."""
     n3 = sum(d["agreement"] == 3 for d in diffs)
     found = [m for m in lean_map if m["status"].startswith("found")]
@@ -354,8 +343,9 @@ def write_summary(table, diffs, lean_map, unmatched, orphans, gate, commit, pilo
            f"{C.REPORT.get('pilot_label', 'pilot')} pilot, Lemma 10.5 and selected proof steps.",
            f"- **Differences:** {len(diffs):,} grouped, {n3} of them reported by all 3 samples. Most are naming, or "
            "the Lean spelling out conditions the paper leaves implicit.",
-           f"- **Validation:** {len({d['item'] for d in gate if d['agreement'] == 3})} of {len(C.VALIDATION)} "
-           "published discrepancies reported by all 3 samples (see below).",
+           f"- **Validation:** {sum(r['k'] == 3 for r in vres)} of {len(vres)} published discrepancies reported "
+           "by all 3 samples at the expected Lean lines; the same check fires on "
+           f"{max((r['control']['window_rate'] for r in vres), default=0):.0%} or less of other places (see below).",
            "- **Start with** [review_shortlist.md](review_shortlist.md): the differences most worth an expert's time.",
            ""]
     tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
@@ -374,10 +364,23 @@ def write_summary(table, diffs, lean_map, unmatched, orphans, gate, commit, pilo
                 "The two discrepancies Bastounis, Circelli and Hansen published "
                 "([arXiv:2610.08144](https://arxiv.org/abs/2610.08144)). These results were put on the target list "
                 "because of that paper; the prompts never describe the discrepancies.", ""]
-        for d in gate:
-            out.append(f"- **{md(d['item'])}** · `{d['decl'].split('.', 1)[-1]}` · {d['agreement']}/3 samples · "
-                       f"{md_paper(d['page'], d['paper_cite'] or 'paper')} · "
-                       f"{md_lean(commit, d['lean_file'], d['lean_lines'])}: {md(d['summary'])}")
+        out += ["Each target is a place, not a wording: the Lean declaration, the lines of the expression the "
+                "discrepancy is about, and the difference types that count. A sample hits it if it reported a "
+                "difference of one of those types citing those lines. The control runs the same check over the "
+                "statements of every other pair compared, to show how often it fires by chance.", ""]
+        for r in vres:
+            v, c = r["target"], r["control"]
+            decl_file = next((d["lean_file"] for d in gate if d["decl"] == v["decl"]), None) or \
+                con.execute("SELECT file FROM lean_decls WHERE name=?", (v["decl"],)).fetchone()[0]
+            out.append(f"- **{md(v['item'])}** · `{v['decl'].split('.', 1)[-1]}` · "
+                       f"{md_lean(commit, decl_file, str(v['lines']))} · {' / '.join(v['types'])}: "
+                       f"**{r['k']} of 3 samples**. Control: fires on {c['window_rate']:.1%} of "
+                       f"{c['windows']:,} windows over the other {c['pairs']} pairs' statements "
+                       f"({c['pairs_fired']} of {c['pairs']} pairs).")
+            for d in gate:
+                if d["item"] == v["item"]:
+                    out.append(f"  - {d['agreement']}/3 · {md_lean(commit, d['lean_file'], d['lean_lines'])}: "
+                               f"{md(d['summary'])}")
         out.append("")
 
     by_type = defaultdict(Counter)
@@ -456,7 +459,7 @@ def paper_link(page, label):
     return f'<a href="{PAPER_URL}#page={esc(page)}">{esc(label)}, p.{esc(page)}</a>' if page else esc(label)
 
 
-def write_html(table, diffs, unmatched, orphans, gate, commit, downstream_where, items, pilot_files):
+def write_html(table, diffs, unmatched, orphans, gate, vres, commit, downstream_where, items, pilot_files):
     by_pair = defaultdict(list)
     for d in diffs:
         by_pair[(d["item"], d["decl"])].append(d)
@@ -493,8 +496,10 @@ def write_html(table, diffs, unmatched, orphans, gate, commit, downstream_where,
             f'<tbody>{"".join(det)}</tbody></table></details></td></tr></tbody>')
     gate_html = "".join(f"<li>{esc(d['item'])}: <code>{esc(d['decl'].split('.', 1)[-1])}</code>, {d['agreement']}/3 samples, "
                         f"{lean_link(commit, d['lean_file'], d['lean_lines'])}: {esc(d['summary'])}</li>" for d in gate)
+    val_html = "".join(f"<li>{esc(V.describe(r))}</li>" for r in vres)
     gate_card = (f'<div class="card gate">{C.REPORT.get("validation_intro", "<b>Validation targets</b>")}'
-                 f'<ul>{gate_html or "<li>not found</li>"}</ul></div>') if C.VALIDATION else ""
+                 f'<ul>{val_html}</ul><p class="sub">Grouped differences at the target lines:</p>'
+                 f'<ul>{gate_html or "<li>none</li>"}</ul></div>') if C.VALIDATION else ""
     pilot_label = C.REPORT.get("pilot_label", "pilot")
     un_html = "".join(f"<tr><td>{esc(u['item'])}</td><td>{esc(u['status'])}</td><td>{u['rounds_tried']}</td>"
                       f"<td><code>{esc(u['best_candidate'])}</code> ({u['candidate_agreement']}/3)</td></tr>" for u in unmatched)
