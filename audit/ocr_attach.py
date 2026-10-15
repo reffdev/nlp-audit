@@ -109,6 +109,10 @@ def flatten(page):
             yield b
 
 
+# End of a proof as OCR writes it: a box glyph (or a misread П), or a LaTeX box command, at the end of a block.
+PROOF_END = re.compile(r"(?:[□П∎]|\\(?:Box|square|qed|blacksquare)\b)\s*\$*\s*$")
+
+
 def main():
     doc = json.loads(OCR.read_text(encoding="utf-8"))
     pdf = pdfplumber.open(PDF)
@@ -150,7 +154,22 @@ def main():
             label = f"{m.group(1)} {m.group(2)}"
             if label not in [s[1] for s in starts]:
                 starts.append((i, label))
-    hard_stops = {i for i, b in enumerate(blocks) if b["block_type"] == "SectionHeader"
+    # A block ends an item only if it is a real section or subsection heading. Marker labels the running
+    # heads ("FINITE TIME BLOWUP ...", "OPENAI", or empty) and proof-step titles ("Step 2: ...") as
+    # SectionHeader too; treating those as stops cut proofs off at page boundaries.
+    known = {str(r[0]) for r in con.execute("SELECT number FROM paper_sections")}
+    known |= {str(r[0]) for r in con.execute("SELECT DISTINCT subsection FROM paper_items WHERE subsection IS NOT NULL")}
+    head = re.compile(r"^[#\s*]*(?:appendix\s+([A-C])\b|((?:\d+|[A-C])(?:\.\d+)?)\.\s|references\b)", re.I)
+
+    def real_heading(b):
+        m = head.match(b["text"] or "")
+        if not m:
+            return False
+        num = m.group(1) or m.group(2)
+        return num is None or num.upper() in known or num in known
+
+    hard_stops = {i for i, b in enumerate(blocks)
+                  if (b["block_type"] == "SectionHeader" and real_heading(b))
                   or re.match(r"^\**\s*(?:\d+|[A-C])\.\d+\.\s", b["text"])}
     hard_stops |= {s[0] for s in starts}
     for col in ("statement_latex", "proof_latex", "ocr_statement_blocks", "ocr_proof_blocks",
@@ -169,7 +188,7 @@ def main():
                 in_proof = True
             if in_proof:
                 proof.append(j)
-                if re.search(r"[□П∎]\s*$", t):
+                if PROOF_END.search(t):
                     break
             elif item_rows[label][1] or j == i or blocks[j]["block_type"] in ("Equation", "ListItem") \
                     or not stmt or blocks[stmt[-1]]["block_type"] == "Equation":

@@ -25,6 +25,7 @@ from pathlib import Path
 
 import config as C
 import llm
+import paper_text as PT
 import xref_llm as X
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -137,15 +138,18 @@ def lean_context(con, decl):
     return "\n\n".join(parts), shown
 
 
+PROOF_CAP = 20000  # characters of proof text in a comparison prompt; paper_text.context_check reports overruns
+
+
 def paper_context(it, page_of):
     stmt = it["statement_latex"] or it["statement"]
-    proof = it["proof_latex"] or it["proof"] or ""
+    proof = PT.choose_proof(it)[0] if it.get("kind") != "ProofStep" else ""
     flagged = it["ocr_flagged_blocks"] or 0
     return (f"PAPER ITEM {it['label']} (page {it['printed_page']}; Section {it['section']} "
             f"'{it['section_title']}', subsection {it['subsection']} '{it['subsection_title']}')\n"
             + (f"[{flagged} block(s) of this item were flagged by the OCR cross-check; symbols may be misread]\n"
                if flagged else "")
-            + f"STATEMENT:\n{stmt}\n\nPROOF:\n{proof[:12000]}")
+            + f"STATEMENT:\n{stmt}\n\nPROOF:\n{proof[:PROOF_CAP]}")
 
 
 def norm(s):

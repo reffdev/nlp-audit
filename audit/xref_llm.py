@@ -23,6 +23,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import config as C
 import llm
+import paper_text as PT
 
 ROOT = Path(__file__).resolve().parent.parent
 DB = C.DB
@@ -92,7 +93,7 @@ def norm(s):
 
 def paper_block(it):
     stmt = (it["statement_latex"] or it["statement"])[:STMT_CHARS]
-    proof = (it["proof_latex"] or it["proof"] or "")[:PROOF_CHARS]
+    proof = (PT.choose_proof(it)[0] if it.get("kind") != "ProofStep" else "")[:PROOF_CHARS]
     # Key proof steps often sit deep in long proofs (e.g. (10.19) in Lemma 10.5), so every numbered
     # equation of the proof is listed too.
     eqs, budget = [], PROOF_EQ_CHARS

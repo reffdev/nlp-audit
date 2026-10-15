@@ -23,6 +23,7 @@ from collections import Counter, defaultdict
 
 import config as C
 import llm  # noqa: F401  (configures the shared request limit)
+import paper_text as PT
 import xref_llm as X
 import xref_search as S
 
@@ -33,27 +34,44 @@ CONTEXT_BEFORE, CONTEXT_AFTER = 1500, 400
 def build_steps(con, parents):
     con.execute("""CREATE TABLE IF NOT EXISTS paper_steps (label, parent, number, printed_page, section, section_title,
                    subsection, subsection_title, statement_latex, ocr_flagged_blocks)""")
-    steps = []
+    try:
+        con.execute("ALTER TABLE paper_steps ADD COLUMN context")
+    except sqlite3.OperationalError:
+        pass
+    steps, unavailable = [], []
     for parent in parents:
-        p = con.execute("SELECT section, section_title, subsection, subsection_title, statement_latex, proof_latex, "
-                        "ocr_flagged_blocks FROM paper_items WHERE label=?", (parent,)).fetchone()
+        con.row_factory = sqlite3.Row
+        p = dict(con.execute("SELECT * FROM paper_items WHERE label=?", (parent,)).fetchone())
+        con.row_factory = None
+        proof = PT.choose_proof(p)[0]
         for num, page, latex in con.execute("SELECT number, printed_page, latex FROM paper_equations WHERE in_item=? "
                                             "AND in_part='proof' ORDER BY line", (parent,)):
-            proof = p[5] or ""
             m = re.search(rf"\\tag\{{\s*{re.escape(num)}\s*\}}|\(\s*{re.escape(num)}\s*\)", proof)
-            ctx = proof[max(0, m.start() - CONTEXT_BEFORE): m.end() + CONTEXT_AFTER] if m else (latex or "")
             label = f"({num}) in proof of {parent}"
+            if not m:
+                # no silent fallback to the bare equation: a step prompt without its proof text is not sent
+                print(f"!! {label}: equation not found in the proof text; recorded as '{PT.CONTEXT_UNAVAILABLE}'")
+                unavailable.append(label)
+                con.execute("DELETE FROM paper_steps WHERE label=?", (label,))
+                con.execute("INSERT INTO paper_steps (label, parent, number, printed_page, context) VALUES (?,?,?,?,?)",
+                            (label, parent, num, page, PT.CONTEXT_UNAVAILABLE))
+                continue
+            ctx = proof[max(0, m.start() - CONTEXT_BEFORE): m.end() + CONTEXT_AFTER]
+            p_ = (p["section"], p["section_title"], p["subsection"], p["subsection_title"], p["statement_latex"],
+                  None, p["ocr_flagged_blocks"])
             text = (f"A numbered step inside the proof of {parent} (page {page}). The target is equation ({num}).\n"
-                    f"STATEMENT OF {parent} (context):\n{(p[4] or '')[:2500]}\n\n"
+                    f"STATEMENT OF {parent} (context):\n{(p_[4] or p['statement'] or '')[:2500]}\n\n"
                     f"THE STEP ({num}), WITH THE SURROUNDING PROOF TEXT:\n...{ctx}...")
-            steps.append(dict(label=label, parent=parent, number=num, printed_page=page, section=p[0],
-                              section_title=p[1], subsection=p[2], subsection_title=p[3], statement_latex=text,
-                              ocr_flagged_blocks=p[6]))
+            steps.append(dict(label=label, parent=parent, number=num, printed_page=page, section=p_[0],
+                              section_title=p_[1], subsection=p_[2], subsection_title=p_[3], statement_latex=text,
+                              ocr_flagged_blocks=p_[6], context="ok"))
     for s in steps:
         con.execute("DELETE FROM paper_steps WHERE label=?", (s["label"],))
-        con.execute("INSERT INTO paper_steps VALUES (?,?,?,?,?,?,?,?,?,?)",
+        con.execute("INSERT INTO paper_steps (label, parent, number, printed_page, section, section_title, subsection, "
+                    "subsection_title, statement_latex, ocr_flagged_blocks, context) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                     tuple(s[k] for k in ("label", "parent", "number", "printed_page", "section", "section_title",
-                                         "subsection", "subsection_title", "statement_latex", "ocr_flagged_blocks")))
+                                         "subsection", "subsection_title", "statement_latex", "ocr_flagged_blocks",
+                                         "context")))
     con.commit()
     # fields X.paper_block / extract.paper_context expect
     for s in steps:
