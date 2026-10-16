@@ -11,6 +11,7 @@ the 3 adjudication samples said yes, and report.py counts a group's agreement on
 Writes table adjudication (group_key, pair_id, type, n_members, yes, no, invalid, model).
 """
 import argparse
+import time
 import sqlite3
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -51,10 +52,18 @@ def prompt(g):
             f"\n\nDo these {len(g)} descriptions assert the same difference? Answer yes or no as JSON.")
 
 
+PAUSE_FLAG = C.DATA / "PAUSE_ADJUDICATION"  # while this file exists, adjudication waits before starting
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
+    if PAUSE_FLAG.exists() and not a.dry_run:
+        print(f"paused: waiting for {PAUSE_FLAG} to be removed", flush=True)
+        while PAUSE_FLAG.exists():
+            time.sleep(30)
+        print("resumed", flush=True)
     con = sqlite3.connect(C.DB)
     con.execute("""CREATE TABLE IF NOT EXISTS adjudication (group_key, pair_id, type, n_members, yes, no, invalid,
                    model)""")
