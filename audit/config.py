@@ -25,13 +25,17 @@ with open(CONFIG_PATH, "rb") as _f:
 DATA = ROOT / "data"
 OUT = ROOT / "out"
 REPO = ROOT / "repo"
-DB = DATA / "audit.db"
+DB = Path(os.environ.get("AUDIT_DB") or DATA / "audit.db")  # AUDIT_DB: run against a copy, e.g. for resampling
 
 PAPER = CFG["paper"]
 LEAN = CFG["lean"]
 PLAN_CFG = CFG.get("plan", {})
 REPORT = CFG.get("report", {})
 VALIDATION = CFG.get("validation", [])
+# Run id: every model-derived row carries it in its `model` column ("<model>|thinking=<0/1>|run=<id>", see
+# xref_llm.run_tag), and report queries read only rows of this run. AUDIT_RUN_ID overrides audit.toml.
+RUN_ID = os.environ.get("AUDIT_RUN_ID") or CFG.get("run", {}).get("id", "v0.2")
+RUN_LIKE = f"%|run={RUN_ID}"  # SQL LIKE pattern for this run's rows
 
 # --- paper ---
 PDF = ROOT / PAPER["file"]

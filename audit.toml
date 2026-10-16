@@ -65,3 +65,10 @@ item = "(10.19) in proof of Lemma 10.5"
 decl = "NavierStokesR3.PressureFlux.exists_uniform_actual_pressure_flux_bound"
 lines = "587-588"  # the first term of the bound: (cutoffL6^(1/2) + 1) * (dissipationRoot / R + 1 / R^2)
 types = ["stronger-bound", "weaker-bound", "other"]
+
+# Editorial notes: one-line corrections shown next to a model description known to be wrong (in summary.md and
+# the shortlist). The model's own text is never changed; `match` is a regex on the difference's description.
+[[editorial_note]]
+item = "(8.10) in proof of Lemma 8.2"
+match = 'finite (C\^\{m\+p\+3\}|derivative) norm'
+note = "the paper's lemma assumes a smooth coefficient; this description is wrong"

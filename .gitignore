@@ -24,3 +24,4 @@ __pycache__/
 # Private drafts (not for the public repository)
 drafts/
 data/llm_prompts.jsonl*
+data/release_v0.2/

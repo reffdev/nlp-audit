@@ -1,0 +1,26 @@
+{
+ "moved": [
+  "Proposition 10.1",
+  "Lemma 4.1",
+  "Lemma 9.2",
+  "Lemma A.5",
+  "Lemma A.6",
+  "Proposition A.10",
+  "Corollary 7.3",
+  "Corollary 8.5",
+  "Corollary B.10",
+  "Lemma 10.2"
+ ],
+ "unchanged": [
+  "Proposition 8.1",
+  "Corollary A.3",
+  "Definition 9.4",
+  "Proposition 9.9",
+  "Lemma 10.5",
+  "Definition 6.5",
+  "Theorem 3.1",
+  "Corollary B.6",
+  "Corollary 10.6",
+  "Theorem 4.6"
+ ]
+}

@@ -1,0 +1,32 @@
+{
+ "extract_deltas": {
+  "quotes": 3050,
+  "context_flag_changed": 4,
+  "page_flag_changed": 1,
+  "context_status": {
+   "exact": 2905,
+   "normalized": 135,
+   "unresolved-OCR": 10
+  },
+  "page_status": {
+   "exact": 2330,
+   "normalized": 100,
+   "unresolved-OCR": 620
+  }
+ },
+ "extract_fields": {
+  "quotes": 3206,
+  "context_flag_changed": 3,
+  "page_flag_changed": 1,
+  "context_status": {
+   "exact": 3050,
+   "normalized": 141,
+   "unresolved-OCR": 15
+  },
+  "page_status": {
+   "exact": 2259,
+   "normalized": 102,
+   "unresolved-OCR": 845
+  }
+ }
+}

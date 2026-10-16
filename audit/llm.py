@@ -30,6 +30,9 @@ RETRY_MAX_TOKENS = 48000  # prompts peak ~67k real tokens; 67k + 48k fits a 131k
 # Server-side limit on concurrent requests (vLLM KV-cache capacity); all threads share it.
 # AUDIT_LLM_THINKING=0 turns off reasoning on models whose chat template supports it (Qwen3).
 THINKING = os.environ.get("AUDIT_LLM_THINKING", "1") != "0"
+# AUDIT_LLM_SAMPLE_OFFSET=k numbers samples k, k+1, ... instead of 0, 1, ...: new seeds (1000 + index) and new
+# cache entries, for measuring resampling noise without touching the cached samples of the published run.
+SAMPLE_OFFSET = int(os.environ.get("AUDIT_LLM_SAMPLE_OFFSET", "0"))
 _slots = threading.BoundedSemaphore(int(os.environ.get("AUDIT_LLM_MAX_CONCURRENCY", "14")))
 
 
@@ -58,7 +61,8 @@ def _one(c, model, key, s, system, user, temperature, max_tokens, tag):
     cache = _load_cache()
     if (key, s) in cache:
         return cache[(key, s)]
-    rec = dict(key=key, sample=s, tag=tag, model=model, thinking=THINKING, t=time.time())
+    rec = dict(key=key, sample=s, tag=tag, model=model, thinking=THINKING, temperature=temperature,
+               max_tokens=max_tokens, run=os.environ.get("AUDIT_RUN_ID", ""), t=time.time())
     try:
         with _slots:
             r = c.chat.completions.create(
@@ -115,7 +119,16 @@ def complete_json(system, user, samples=3, temperature=0.7, max_tokens=24000, ta
     """Return a list of `samples` parsed JSON objects (None where parsing failed), one per sample.
     max_tokens covers reasoning ("thinking") tokens too on reasoning models."""
     c, model = client()
-    key = hashlib.sha256(f"{model}\nthinking={THINKING}\n{system}\n{user}".encode()).hexdigest()[:16]
+    # The cache key covers everything that changes the answer: model, reasoning, temperature, token budget and
+    # the prompt. Responses logged before v0.2's re-scoring used a key without temperature and budget; they are
+    # reused only when AUDIT_LLM_LEGACY_CACHE=1 (to reproduce the published runs from their log).
+    key = hashlib.sha256(f"{model}\nthinking={THINKING}\ntemperature={temperature}\nmax_tokens={max_tokens}\n"
+                         f"{system}\n{user}".encode()).hexdigest()[:16]
+    if os.environ.get("AUDIT_LLM_LEGACY_CACHE") == "1":
+        legacy = hashlib.sha256(f"{model}\nthinking={THINKING}\n{system}\n{user}".encode()).hexdigest()[:16]
+        cache = _load_cache()
+        if all((legacy, s) in cache for s in range(SAMPLE_OFFSET, SAMPLE_OFFSET + samples)):
+            return [cache[(legacy, s)] for s in range(SAMPLE_OFFSET, SAMPLE_OFFSET + samples)]
     _log_prompt(key, model, system, user, tag)
     def run(s):
         out = _one(c, model, key, s, system, user, temperature, max_tokens, tag)
@@ -126,7 +139,7 @@ def complete_json(system, user, samples=3, temperature=0.7, max_tokens=24000, ta
                        tag + ":retry-long")
         return out
     with ThreadPoolExecutor(samples) as ex:
-        return list(ex.map(run, range(samples)))
+        return list(ex.map(run, range(SAMPLE_OFFSET, SAMPLE_OFFSET + samples)))
 
 
 def approx_tokens(s):

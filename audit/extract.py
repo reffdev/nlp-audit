@@ -146,15 +146,14 @@ def lean_context(con, decl):
 PROOF_CAP = 20000  # characters of proof text in a comparison prompt; paper_text.context_check reports overruns
 
 
-def paper_context(it, page_of):
-    stmt = it["statement_latex"] or it["statement"]
-    proof = PT.choose_proof(it)[0] if it.get("kind") != "ProofStep" else ""
+def paper_context(it, ctx):
+    """The paper part of a comparison prompt, rendered from the Context that quote verification also uses."""
     flagged = it["ocr_flagged_blocks"] or 0
     return (f"PAPER ITEM {it['label']} (page {it['printed_page']}; Section {it['section']} "
             f"'{it['section_title']}', subsection {it['subsection']} '{it['subsection_title']}')\n"
             + (f"[{flagged} block(s) of this item were flagged by the OCR cross-check; symbols may be misread]\n"
                if flagged else "")
-            + f"STATEMENT:\n{stmt}\n\nPROOF:\n{proof[:PROOF_CAP]}")
+            + f"STATEMENT:\n{ctx.statement}\n\nPROOF:\n{ctx.proof}")
 
 
 norm = Q.norm  # see quotes.py: LaTeX commands are kept as the symbols they stand for
@@ -324,8 +323,9 @@ def main():
             continue
         cands = [c["decl"] for c in json.loads(fa or "[]")]
         it = items[item]
-        pctx = paper_context(it, None)
-        paper_text = (it["statement_latex"] or "") + " " + (it["proof_latex"] or "") + " " + (it["statement"] or "")
+        ctx = PT.context(it, PROOF_CAP)
+        pctx = paper_context(it, ctx)
+        paper_text = ctx.text  # verification uses exactly what the prompt shows
         for decl in cands:
             lctx, shown = lean_context(con, decl)
             others = [c for c in cands if c != decl]

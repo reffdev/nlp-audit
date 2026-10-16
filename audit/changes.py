@@ -8,10 +8,11 @@ v0.1) with the current database and out/.
 import csv
 import io
 import json
+import posixpath
 import re
 import sqlite3
 import subprocess
-from collections import Counter
+from collections import Counter, defaultdict
 
 import config as C
 import paper_text as PT
@@ -20,6 +21,50 @@ import xref_llm as X
 
 OLD_DB = C.DATA / "audit_v0.1.db"
 TAG = "v0.1"
+# Step 3 of the follow-up review, decided by reading the three v0.2 samples (not by the method):
+RECOVERY_1019 = ("The third sample described a different observation: it reported the extra 1/R² summand inside "
+                 "the first factor as a `stronger-bound` difference at line 588, and the change from B_R to "
+                 "`cutoffL6`/`dissipationRoot` as a separate `different-norm` difference at line 587, but it did not "
+                 "say that the first term's form differs. Sample 0 likewise listed the 1/R² summand as an observation "
+                 "separate from its \"first part of the bound differs\" entry.")
+
+
+def move_kind(con_old, con_new):
+    """Classify every target whose top declaration or agreed set changed (follow-up review, step 1)."""
+    def st(con):
+        return {r[0]: (r[1], r[2], {c["decl"]: c["agreement"] for c in json.loads(r[3] or "[]")})
+                for r in con.execute("SELECT item, status, found_decl, found_all FROM search_status")}
+    so, sn = st(con_old), st(con_new)
+    dfile = dict(con_new.execute("SELECT name, file FROM lean_decls"))
+    clu = defaultdict(set)
+    for c, d in con_new.execute("SELECT cluster, decl FROM static_dupes"):
+        clu[d].add(c)
+    rows = []
+    for it in sorted(sn):
+        a, b = so.get(it, ("", "", {})), sn[it]
+        if (a[0], a[1]) == (b[0], b[1]) and set(a[2]) == set(b[2]):
+            continue
+        o, n = a[1], b[1]
+        if o == n:
+            dist = "same declaration"
+        elif clu[o] & clu[n]:
+            dist = "same-cluster"
+        elif dfile.get(o) == dfile.get(n):
+            dist = "same-file"
+        elif posixpath.dirname(dfile.get(o, "")) == posixpath.dirname(dfile.get(n, "")):
+            dist = "same-module-directory"
+        else:
+            dist = "unrelated"
+        if o == n:
+            overlap = "top unchanged; agreed set changed"
+        elif o in b[2]:
+            overlap = "old top still among the agreed declarations"
+        elif set(a[2]) & set(b[2]):
+            overlap = "agreed sets overlap"
+        else:
+            overlap = "agreed sets disjoint"
+        rows.append((it, dist, overlap, o, n))
+    return rows
 
 
 def git_show(path):
@@ -77,8 +122,36 @@ def main():
             + ", ".join(f"{k} {a:,} → {b:,}" for k, (a, b) in short.items()) + "). Every comparison prompt "
             "changed anyway, because the instruction about Lean section variables was corrected.", ""]
 
+    # --- how far the changed matches moved (follow-up review, step 1) ---
+    moves = move_kind(old, new)
+    old.row_factory = new.row_factory = None
+    n_dir = new.execute("SELECT count(*) FROM lean_decls").fetchone()[0]
+    top_dir = new.execute("SELECT count(*) FROM lean_decls WHERE file NOT LIKE '%/%/%'").fetchone()[0]
+    dist, ovl = Counter(m[1] for m in moves), Counter(m[2] for m in moves)
+    out += ["## How far the changed matches moved", "",
+            f"{len(moves)} of {len(so_ := status(new))} targets changed their top declaration or their set of agreed "
+            "declarations between v0.1 and v0.2. By distance between the v0.1 and v0.2 top declarations:", "",
+            "| Distance | Targets |", "|---|--:|"]
+    out += [f"| {k} | {dist[k]} |" for k in ("same declaration", "same-cluster", "same-file", "same-module-directory",
+                                             "unrelated")]
+    out += ["", f"\"Same module directory\" separates little here: {top_dir:,} of the {n_dir:,} declarations are "
+            "in the single folder `NavierStokes/`. A more telling split is whether the two runs' agreed sets "
+            "overlap:", "", "| Overlap | Targets |", "|---|--:|"]
+    out += [f"| {k} | {ovl[k]} |" for k in ("top unchanged; agreed set changed",
+                                             "old top still among the agreed declarations", "agreed sets overlap",
+                                             "agreed sets disjoint")]
+    out += ["", "<details><summary>Per target</summary>", "", "| Target | Distance | Overlap | v0.1 top | v0.2 top |",
+            "|---|---|---|---|---|"]
+    out += [f"| {m[0]} | {m[1]} | {m[2]} | `{(m[3] or '-').split('.', 1)[-1]}` | `{(m[4] or '-').split('.', 1)[-1]}` |"
+            for m in moves]
+    out += ["", "</details>", ""]
+    out += ["59 of 88 targets changed match between runs; 20 share no agreed declaration with v0.1. Prompts also "
+            "changed, so this is sensitivity to changed inputs, not a measurement of sampling noise. That measurement "
+            "is deferred to v2.", ""]
+
     # --- targets whose match changed ---
     so, sn = status(old), status(new)
+    old.row_factory = new.row_factory = None
     rows = []
     for item in sorted(set(so) | set(sn)):
         a, b = so.get(item, {}), sn.get(item, {})
@@ -94,6 +167,38 @@ def main():
             "|---|---|---|---|---|--:|--:|"]
     out += [f"| {r[0]} | {r[1]} | `{r[2]}` | {r[3]} | `{r[4]}` | {r[5]} | {r[6]} |" for r in rows]
     out.append("")
+
+    # --- re-scoring of the stored outputs (no model calls) ---
+    rs = json.loads((C.DATA / "rescore_result.json").read_text()) if (C.DATA / "rescore_result.json").exists() else None
+    v2s = list(csv.DictReader(open(C.OUT / "differences_samples.csv", encoding="utf-8-sig")))
+    q = [x for x in v2s if x["paper_quote"]]
+    ok = ("exact", "normalized")
+    ctx_pass = sum(x["paper_quote_status_context"] in ok for x in q)
+    page_pass = sum(x["paper_quote_status_page"] in ok for x in q)
+    both = sum(x["paper_quote_status_context"] in ok and x["paper_quote_status_page"] not in ok for x in q)
+    pst, cst = Counter(x["paper_quote_status_page"] for x in q), Counter(x["paper_quote_status_context"] for x in q)
+    out += ["## Re-scoring of the v0.2 outputs", "",
+            "After the rerun, a second review found verification-side defects; these were fixed and the stored v0.2 "
+            "outputs re-scored without any model calls (`audit/rescore.py`).", "",
+            "- **One context per comparison.** The prompt rendered the paper text from `choose_proof()`, but paper "
+            "quotes were verified against a different concatenation of texts. Both now use one immutable context "
+            "object. Re-scored against it, "
+            + (f"{rs['extract_deltas']['context_flag_changed']} of {rs['extract_deltas']['quotes']:,} difference quotes "
+               f"and {rs['extract_fields']['context_flag_changed']} of {rs['extract_fields']['quotes']:,} extracted-field "
+               "quotes changed status." if rs else "(not run)"),
+            "- **Quote normalization keeps brace grouping** (`x^{n+1}` no longer matches `x^n+1`), and each quote has "
+            "one of three statuses: exact, normalized, unresolved-OCR.",
+            f"- **Page-level status is the headline.** Of {len(q):,} paper quotes in reported differences, "
+            f"{page_pass:,} are found on the page their citation points to ({pst['exact']:,} exact, "
+            f"{pst['normalized']:,} normalized, {pst['unresolved-OCR']:,} unresolved-OCR), and {ctx_pass:,} in the "
+            f"text the model was shown ({cst['exact']:,} exact, {cst['normalized']:,} normalized, "
+            f"{cst['unresolved-OCR']:,} unresolved-OCR); {both:,} pass in the context but fail on the cited page.",
+            "- **Grouping includes the Lean file**, not just line numbers. This split 2 groups that mixed a "
+            "declaration's lines with same-numbered lines of a definition in another file; 4 of the resulting groups "
+            "have no adjudication of their own and are reported as \"not adjudicated\".",
+            "- **Run id on every row** (in the `model` column), and report queries read one run only. The response "
+            "cache key now includes temperature and token budget; responses logged before this change are reused "
+            "only with `AUDIT_LLM_LEGACY_CACHE=1`.", ""]
 
     # --- agreement ---
     v1 = list(csv.DictReader(io.StringIO(git_show("out/differences.csv") or "")))
@@ -114,7 +219,8 @@ def main():
             f"| 1 of 3 | {c1['1']} | {ov['1']} | {conf['1']} |",
             f"| overlapping but not confirmed | - | - | {conf['not confirmed']} |", "",
             "Adjudication results over the groups with 2 or more samples: "
-            + ", ".join(f"{k} of 3 said same: {adj[k]}" for k in sorted(adj, reverse=True)) + ".", "",
+            + ", ".join(f"{k} of 3 said same: {adj[k]}" for k in sorted((k for k in adj if k.isdigit()), reverse=True))
+            + (f"; not adjudicated: {adj['not adjudicated']}" if adj.get("not adjudicated") else "") + ".", "",
             "v0.1 and v0.2 groups are not matched one to one: the comparison was re-sampled, and v0.1's grouping "
             "also chained overlapping citations.", ""]
 
@@ -134,11 +240,23 @@ def main():
             "| Target | v0.1 samples | v0.1 control (pairs; windows) | v0.2 samples | v0.2 control (pairs; windows) |",
             "|---|--:|---|--:|---|"]
     for v in C.VALIDATION:
+        V.RUN = None  # each database holds a single run
         a, b = V.check(old, v), V.check(new, v)
+        V.RUN = C.RUN_ID
         ca, cb = a["control"], b["control"]
         out.append(f"| {v['item']} | {a['k']} of 3 | {ca['pairs_fired']} of {ca['pairs']}; {ca['window_rate']:.1%} | "
                    f"{b['k']} of 3 | {cb['pairs_fired']} of {cb['pairs']}; {cb['window_rate']:.1%} |")
-    out.append("")
+    out += ["", "For (10.19), the location-and-type check counts 3 of 3 samples, but the grouped difference "
+            "\"the first part of the bound differs\" has citations from only 2 samples and was confirmed by 2 of 3 "
+            "adjudication samples, so it is reported as unconfirmed. Reading the three samples: " + RECOVERY_1019, ""]
+
+    # --- decoy test ---
+    d1 = old.execute("SELECT sum(strong), sum(weak), count(*) FROM decoy_summary").fetchone()
+    d2 = new.execute("SELECT sum(strong), sum(weak), count(*) FROM decoy_summary").fetchone()
+    out += ["## Decoy test", "",
+            f"{d2[0]} of {d2[2]} decoys received a confident false match in v0.2 ({d1[0]} of {d1[2]} in v0.1); "
+            f"{d2[2]} items is too few to distinguish these. Weak (2 of 3) false matches: {d2[1]} in v0.2, "
+            f"{d1[1]} in v0.1.", ""]
     (C.ROOT / "CHANGES-v0.2.md").write_text("\n".join(out), encoding="utf-8")
     print("wrote CHANGES-v0.2.md")
 

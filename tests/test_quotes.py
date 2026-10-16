@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "audit"))
-from quotes import found, norm  # noqa: E402
+from quotes import found, norm, status  # noqa: E402
 
 
 def test_relations_are_kept_apart():
@@ -36,6 +36,18 @@ def test_case_is_kept():
 def test_unknown_commands_become_tokens():
     assert norm(r"\frac{a}{b}") == "⟨frac⟩ab"
     assert not found(r"\frac{a}{b}", "ab")
+
+
+def test_brace_grouping_is_kept():
+    assert not found(r"x^{n+1}", r"x^n+1")
+    assert not found(r"\frac{ab}{c}", r"\frac{a}{bc}")
+    assert found(r"x^{n}", r"x^n")
+
+
+def test_statuses():
+    assert status(r"x \le y", r"so x \le y holds") == "exact"
+    assert status(r"x \le y", "so x ≤ y holds") == "normalized"
+    assert status(r"x \ge y", "so x ≤ y holds") == "unresolved-OCR"
 
 
 if __name__ == "__main__":

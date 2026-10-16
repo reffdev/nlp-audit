@@ -19,7 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 import config as C
 import llm
 import xref_llm as X
-from report_util import group_deltas, group_key
+from report_util import group_deltas, group_key, lean_match_file
 
 SAMPLES = 3
 WORKERS = 5
@@ -33,11 +33,18 @@ Answer with strict JSON: {"same": "yes"} or {"same": "no"}."""
 
 
 def groups(con):
+    """Groups exactly as report.py forms them: each delta's Lean file attributed first (lean_match_file)."""
+    import extract as E
     con.row_factory = sqlite3.Row
     rows = [dict(r) for r in con.execute("SELECT * FROM extract_deltas ORDER BY pair_id, sample, rowid")]
+    pairs = {r["pair_id"]: dict(r) for r in con.execute("SELECT pair_id, decl, decl_file FROM extract_pairs")}
     con.row_factory = None
+    shown = {pid: E.lean_context(con, p["decl"])[1] for pid, p in pairs.items()}
     by = defaultdict(list)
     for r in rows:
+        p = pairs[r["pair_id"]]
+        r["lean_file"] = lean_match_file(r["lean_quote"], r["lean_lines"], shown[r["pair_id"]], p["decl_file"]) \
+            or p["decl_file"]
         by[(r["pair_id"], r["type"])].append(r)
     for (pair_id, t), rs in by.items():
         for g in group_deltas(rs):

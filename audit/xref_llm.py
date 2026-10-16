@@ -83,8 +83,9 @@ If nothing plausible exists, return an empty candidates list.""" % ", ".join(DEC
 
 
 def run_tag():
-    """Model plus settings that change its output; stored in the `model` column so runs coexist."""
-    return f"{llm.client()[1]}|thinking={int(llm.THINKING)}"
+    """Model, the settings that change its output, and the run id; stored in the `model` column of every
+    model-derived row, so runs coexist and reports can read one run only."""
+    return f"{llm.client()[1]}|thinking={int(llm.THINKING)}|run={C.RUN_ID}"
 
 
 def norm(s):

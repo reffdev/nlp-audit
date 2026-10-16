@@ -35,6 +35,10 @@ def group_deltas(rows):
     cites Lean lines, the same paper citation. Each delta joins the group it overlaps most, so groups never
     chain through a middle member."""
     def overlap(a, b):
+        # line numbers only mean something within one file: a quote from a definition in another file shown in
+        # the prompt can carry the same numbers (lean_file is set by the caller where known)
+        if a.get("lean_file") and b.get("lean_file") and a["lean_file"] != b["lean_file"]:
+            return 0
         la, lb = lines_of(a["lean_lines"]), lines_of(b["lean_lines"])
         if la and lb:
             return max(0, min(la[1], lb[1]) - max(la[0], lb[0]) + 1)

@@ -16,13 +16,16 @@ import sqlite3
 from collections import defaultdict
 
 import config as C
+
+RUN = C.RUN_ID  # changes.py sets this to None to score each database's own (single) run
 from report_util import lean_match_file, lines_of
 from static_checks import full_statement
 
 
 def _deltas(con, pair_id):
     return [dict(r) for r in con.execute(
-        "SELECT sample, type, lean_lines, lean_quote, description FROM extract_deltas WHERE pair_id=?", (pair_id,))]
+        "SELECT sample, type, lean_lines, lean_quote, description FROM extract_deltas WHERE pair_id=? AND model LIKE ?",
+        (pair_id, "%|run=%" if RUN is None else f"%|run={RUN}"))]
 
 
 def _overlaps(a, b):
@@ -60,7 +63,8 @@ def check(con, v):
     con.row_factory = sqlite3.Row
     lines = lines_of(v["lines"])
     types = set(v["types"])
-    pairs = [dict(r) for r in con.execute("SELECT pair_id, item, decl, decl_file FROM extract_pairs")]
+    pairs = [dict(r) for r in con.execute("SELECT pair_id, item, decl, decl_file FROM extract_pairs WHERE model LIKE ?",
+                                          ("%|run=%" if RUN is None else f"%|run={RUN}",))]
     target = next((p for p in pairs if p["item"] == v["item"] and p["decl"] == v["decl"]), None)
     res = dict(target=v, samples=[], k=0, hits=[], extracted=target is not None)
     if target:

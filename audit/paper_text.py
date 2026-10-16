@@ -11,6 +11,7 @@ disagree in length by more than MARGIN is logged in the table paper_proof_choice
 """
 import re
 import sqlite3
+from dataclasses import dataclass
 
 import config as C
 from ocr_attach import PROOF_END
@@ -32,6 +33,30 @@ def choose_proof(it):
     if not PROOF_END.search(ocr) and TEXT_END.search(txt):
         return txt, "text layer", "OCR proof does not end at a proof-end marker"
     return ocr, "OCR", "OCR proof complete"
+
+
+@dataclass(frozen=True)
+class Context:
+    """The paper side of one comparison, built once and used for both the prompt and quote verification, so a
+    quote is checked against exactly the text the model was shown."""
+    label: str
+    statement: str
+    proof: str            # as shown, after the cap
+    proof_source: str     # "OCR", "text layer", or "" (proof steps carry their proof text in the statement)
+    proof_truncated: bool
+
+    @property
+    def text(self):
+        return self.statement + "\n\n" + self.proof
+
+
+def context(it, cap):
+    """Context for a paper_items or paper_steps row (dict)."""
+    stmt = it.get("statement_latex") or it.get("statement") or ""
+    if it.get("kind") == "ProofStep" or "parent" in it:
+        return Context(it["label"], stmt, "", "", False)
+    proof, src, _ = choose_proof(it)
+    return Context(it["label"], stmt, proof[:cap], src, len(proof) > cap)
 
 
 def ends_complete(text):
